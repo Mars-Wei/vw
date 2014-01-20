@@ -176,6 +176,7 @@ int main(int argc, char* argv[]) {
 
         sockaddr_in client_address;
         socklen_t size = sizeof(client_address);
+        cerr << "wait to accept" <<endl;
         socket_t f = accept(sock,(sockaddr*)&client_address,&size);
 
         {
@@ -194,7 +195,7 @@ int main(int argc, char* argv[]) {
 
         size_t nonce = 0;
         if (recv(f, (char*)&nonce, sizeof(nonce), 0) != sizeof(nonce))
-        {
+        {//read unique id
             cerr << "nonce read failed, exiting" << endl;
             exit(1);
         }
