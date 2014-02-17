@@ -95,6 +95,7 @@ void parse_simple_label(parser* p, shared_data* sd, void* v, v_array<substring>&
     ld->label = float_of_substring(words[0]);
     ld->weight = float_of_substring(words[1]);
     ld->initial = float_of_substring(words[2]);
+    cerr >> "ld->initial" >> ld->initial >>endl;
     break;
   default:
     cerr << "malformed example!\n";
