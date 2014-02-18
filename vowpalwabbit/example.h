@@ -10,7 +10,7 @@ license as described in the file LICENSE.
 #include "v_array.h"
 
 struct feature {
-  float x;
+  float x;//feature value
   uint32_t weight_index;
   bool operator==(feature j){return weight_index == j.weight_index;}
 };
@@ -33,13 +33,13 @@ struct example // core example datatype.
   v_array<char> tag;//An identifier for the example.
   size_t example_counter;
 
-  v_array<unsigned char> indices;
-  v_array<feature> atomics[256]; // raw parsed data
+  v_array<unsigned char> indices; //index, namespaces
+  v_array<feature> atomics[256]; // raw parsed data, namespace index->features
   uint32_t ft_offset;
   
   v_array<audit_data> audit_features[256];
   
-  size_t num_features;//precomputed, cause it's fast&easy.
+  size_t num_features;//precomputed, cause it's fast&easy. used only for statistics
   float partial_prediction;//shared data for prediction.
   v_array<float> topic_predictions;
   float loss;

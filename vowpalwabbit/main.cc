@@ -27,6 +27,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
+    //parse cmd args and init vw
   vw *all = parse_args(argc, argv);
   struct timeb t_start, t_end;
   ftime(&t_start);
@@ -42,6 +43,7 @@ int main(int argc, char *argv[])
       cerr.precision(5);
     }
 
+    //create parser structures ; parse and load examples
   VW::start_parser(*all);
 
   all->l.drive(all);

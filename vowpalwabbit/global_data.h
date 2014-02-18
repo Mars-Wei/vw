@@ -186,6 +186,7 @@ struct vw {
   std::vector<std::string> pairs; // pairs of features to cross.
   std::vector<std::string> triples; // triples of features to cross.
   bool ignore_some;
+    bool xignore;//ignore single feature only
   bool ignore[256];//a set of namespaces to ignore
 
   std::vector<std::string> ngram_strings; // pairs of features to cross.

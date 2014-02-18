@@ -46,6 +46,9 @@ void initialize_regressor(vw& all)
 
 const size_t buf_size = 512;
 
+/**
+*model header
+*/
 void save_load_header(vw& all, io_buf& model_file, bool read, bool text)
 {
   char buff[buf_size];

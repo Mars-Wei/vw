@@ -2,6 +2,8 @@
 Copyright (c) by respective owners including Yahoo!, Microsoft, and
 individual contributors. All rights reserved.  Released under a BSD (revised)
 license as described in the file LICENSE.
+
+@desp: parse a line into one example
  */
 
 #include <math.h>
@@ -15,7 +17,7 @@ license as described in the file LICENSE.
 using namespace std;
 
 size_t hashstring (substring s, uint32_t h)
-{
+{//h is a hash base
   size_t ret = 0;
   //trim leading whitespace but not UTF-8
   for(; s.begin < s.end && *(s.begin) <= 0x20 && (int)*(s.begin) >= 0; s.begin++);
@@ -77,6 +79,7 @@ public:
   
   ~TC_parser(){ }
   
+    //read feature value
   inline float featureValue(){
     if(reading_head == endLine || *reading_head == '|' || *reading_head == ' ' || *reading_head == '\t' || *reading_head == '\r')
       return 1.;
@@ -121,7 +124,7 @@ public:
       if (feature_name.end != feature_name.begin)
 	word_hash = (p->hasher(feature_name,(uint32_t)channel_hash));
       else
-	word_hash = channel_hash + anon++;
+	word_hash = channel_hash + anon++;//add based namespace hash
       if(v == 0) return; //dont add 0 valued features to list of features
       feature f = {v,(uint32_t)word_hash * weights_per_problem};
       ae->sum_feat_sq[index] += v*v;
@@ -159,6 +162,8 @@ public:
   }
   
   inline void nameSpaceInfo(){
+    //read feature namespace
+
     if(reading_head == endLine ||*reading_head == '|' || *reading_head == ' ' || *reading_head == '\t' || *reading_head == ':' || *reading_head == '\r'){
       // syntax error
       cout << "malformed example !\nString expected after : " << std::string(beginLine, reading_head - beginLine).c_str()<< "\"" << endl;
@@ -179,11 +184,14 @@ public:
     }
   }
   
+/**
+* list features of one namespace
+*/
   inline void listFeatures(){
     while(*reading_head == ' ' || *reading_head == '\t'){
       //listFeatures --> ' ' MaybeFeature ListFeatures
       ++reading_head;
-      maybeFeature();
+      maybeFeature();//read a feature
     }
     if(!(*reading_head == '|' || reading_head == endLine || *reading_head == '\r')){
       //syntax error
@@ -198,7 +206,7 @@ public:
     index = 0;
     new_index = false;
     anon = 0;
-    if(*reading_head == ' ' || *reading_head == '\t' || reading_head == endLine || *reading_head == '|' || *reading_head == '\r' ){
+    if(*reading_head == ' ' || *reading_head == '\t' || reading_head == endLine || *reading_head == '|' || *reading_head == '\r' ){//no namespace
       // NameSpace --> ListFeatures
       index = (unsigned char)' ';
       if(ae->atomics[index].begin == ae->atomics[index].end)
@@ -220,6 +228,7 @@ public:
       cout << "malformed example !\n'|' , String, space or EOL expected after : \"" << std::string(beginLine, reading_head - beginLine).c_str()<< "\"" << endl;
     }
     if(new_index && ae->atomics[index].begin != ae->atomics[index].end)
+        //save namespace into index
       ae->indices.push_back(index);
   }
   
@@ -251,6 +260,7 @@ public:
 
 void substring_to_example(vw* all, example* ae, substring example)
 {
+  //parse label header?  
   all->p->lp->default_label(ae->ld);
   char* bar_location = safe_index(example.begin, '|', example.end);
   char* tab_location = safe_index(example.begin, '\t', bar_location);
@@ -278,6 +288,7 @@ void substring_to_example(vw* all, example* ae, substring example)
   if (all->p->words.size() > 0)
     all->p->lp->parse_label(all->p, all->sd, ae->ld, all->p->words);
   
+  //parse namespaces of features
   TC_parser parser_line(bar_location,example.end,*all,ae);
 }
 

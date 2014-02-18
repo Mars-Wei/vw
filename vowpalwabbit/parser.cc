@@ -2,6 +2,8 @@
    Copyright (c) by respective owners including Yahoo!, Microsoft, and
    individual contributors. All rights reserved.  Released under a BSD (revised)
    license as described in the file LICENSE.
+
+    @desp:  load and parse examples 
  */
 #include <sys/types.h>
 
@@ -297,7 +299,7 @@ void reset_source(vw& all, size_t numbits)
             }
         }
     }
-}
+}//end reset source
 
 void finalize_source(parser* p)
 {
@@ -399,6 +401,9 @@ void parse_cache(vw& all, po::variables_map &vm, string source,
 #endif
 
 
+/**
+* parse input and output args
+*/
 void parse_source_args(vw& all, po::variables_map& vm, bool quiet, size_t passes)
 {
     all.p->input->current = 0;
@@ -409,7 +414,7 @@ void parse_source_args(vw& all, po::variables_map& vm, bool quiet, size_t passes
         hash_function = vm["hash"].as<string>();
 
     if (all.daemon || all.active)
-    {
+    {//daemon server
         all.p->bound_sock = (int)socket(PF_INET, SOCK_STREAM, 0);
         if (all.p->bound_sock < 0) {
             cerr << "can't open socket!" << endl;
@@ -610,7 +615,7 @@ child:
     all.p->input->count = all.p->input->files.size();
     if (!quiet)
         cerr << "num sources = " << all.p->input->files.size() << endl;
-}
+}//end parse_source_args()
 
 bool parser_done(parser* p)
 {
@@ -709,7 +714,8 @@ example* get_unused_example(vw& all)
 }
 
 bool parse_atomic_example(vw& all, example* ae, bool do_read = true)
-{
+{//read raw data
+    //read features
     if (do_read && all.p->reader(&all, ae) <= 0)
         return false;
 
@@ -747,14 +753,14 @@ void setup_example(vw& all, example* ae)
     ae->example_t = (float)all.sd->t;
 
     if (all.ignore_some)
-    {
+    {//whether has '--ignore'
         if (all.audit || all.hash_inv)
             for (unsigned char* i = ae->indices.begin; i != ae->indices.end; i++)
-                if (all.ignore[*i])
+                if (all.ignore[*i])//TODO: to be finish, xignore support
                     ae->audit_features[*i].erase();
 
         for (unsigned char* i = ae->indices.begin; i != ae->indices.end; i++)
-            if (all.ignore[*i])
+            if (all.ignore[*i]&&(!all.xignore))
             {//delete namespace
                 ae->atomics[*i].erase();
                 memmove(i,i+1,(ae->indices.end - (i+1))*sizeof(*i));
@@ -788,8 +794,11 @@ void setup_example(vw& all, example* ae)
 
     for (unsigned char* i = ae->indices.begin; i != ae->indices.end; i++) 
     {
-        ae->num_features += ae->atomics[*i].end - ae->atomics[*i].begin;
-        ae->total_sum_feat_sq += ae->sum_feat_sq[*i];
+        if ( ! all.ignore[*i] )
+        {
+            ae->num_features += ae->atomics[*i].end - ae->atomics[*i].begin;
+            ae->total_sum_feat_sq += ae->sum_feat_sq[*i];
+        }
     }
 
     if (all.rank == 0) {
@@ -810,8 +819,9 @@ void setup_example(vw& all, example* ae)
             ae->total_sum_feat_sq += ae->sum_feat_sq[(int)(*i)[0]] * ae->sum_feat_sq[(int)(*i)[1]] * ae->sum_feat_sq[(int)(*i)[2]];
         }
 
-    } else {
-        for (vector<string>::iterator i = all.pairs.begin(); i != all.pairs.end();i++)
+    } 
+    else{
+       for (vector<string>::iterator i = all.pairs.begin(); i != all.pairs.end();i++)
         {
             ae->num_features
                 += (ae->atomics[(int)(*i)[0]].end - ae->atomics[(int)(*i)[0]].begin) * all.rank;
@@ -1004,7 +1014,7 @@ DWORD WINAPI main_parse_loop(LPVOID in)
 #else
 void *main_parse_loop(void *in)
 #endif
-{
+{//parse thread ,producer-consumer mode, this is producer 
     vw* all = (vw*) in;
     size_t example_number = 0;  // for variable-size batch learning algorithms
     while(!all->p->done)

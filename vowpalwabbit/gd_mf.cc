@@ -34,7 +34,7 @@ float mf_inline_predict(vw& all, example* &ec)
   ec->topic_predictions.erase();
 
   float linear_prediction = 0;
-  // linear terms
+  // linear terms ,if (!ignore[*i])
   for (unsigned char* i = ec->indices.begin; i != ec->indices.end; i++) 
     GD::foreach_feature<vec_add>(all, &linear_prediction, ec->atomics[*i].begin, ec->atomics[*i].end);
 

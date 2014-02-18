@@ -104,6 +104,7 @@ vw* parse_args(int argc, char *argv[])
     ("holdout_period", po::value<uint32_t>(&(all->holdout_period)), "holdout period for test only, default 10")
     ("version","Version information")
     ("ignore", po::value< vector<unsigned char> >(), "ignore namespaces beginning with character <arg>")
+    ("xignore", "Ignore single feature only")
     ("keep", po::value< vector<unsigned char> >(), "keep namespaces beginning with character <arg>")
     ("kill_cache,k", "do not reuse existing cache: create a new one always")
     ("initial_weight", po::value<float>(&(all->initial_weight)), "Set all weights to an initial value of 1.")
@@ -340,8 +341,15 @@ vw* parse_args(int argc, char *argv[])
 
   
 
-  if (vm.count("quadratic"))
+  if(vm.count("xignore"))  
     {
+        cerr<<"xignore is configured, ignore single feature only"<<endl;
+        all->xignore = true;
+    }
+    else
+        all->xignore = false;
+  if (vm.count("quadratic"))
+  {
       all->pairs = vm["quadratic"].as< vector<string> >();
       vector<string> newpairs;
       //string tmp;       
@@ -350,73 +358,73 @@ vw* parse_args(int argc, char *argv[])
       int valid_ns_size = printable_end - printable_start - 1; //will skip two characters
 
       if(!all->quiet)
-        cerr<<"creating quadratic features for pairs: ";   
-    
+          cerr<<"creating quadratic features for pairs: ";   
+
       for (vector<string>::iterator i = all->pairs.begin(); i != all->pairs.end();i++){
-        if(!all->quiet){
-          cerr << *i << " ";
-          if (i->length() > 2)
-            cerr << endl << "warning, ignoring characters after the 2nd.\n";
-          if (i->length() < 2) {
-            cerr << endl << "error, quadratic features must involve two sets.\n";
-            throw exception();
-          }
-        }
-        //-q x:
-        if((*i)[0]!=':'&&(*i)[1]==':'){
-          newpairs.reserve(newpairs.size() + valid_ns_size);
-          for (char j=printable_start; j<=printable_end; j++){
-            if(valid_ns(j))
-              newpairs.push_back(string(1,(*i)[0])+j);
-          }
-        }
-        //-q :x
-        else if((*i)[0]==':'&&(*i)[1]!=':'){
-          newpairs.reserve(newpairs.size() + valid_ns_size);
-          for (char j=printable_start; j<=printable_end; j++){
-            if(valid_ns(j))
-              newpairs.push_back(string(&j)+(*i)[1]);
-          }
-        }
-        //-q ::
-        else if((*i)[0]==':'&&(*i)[1]==':'){
-          newpairs.reserve(newpairs.size() + valid_ns_size*valid_ns_size);
-          for (char j=printable_start; j<=printable_end; j++){
-            if(valid_ns(j)){
-              for (char k=printable_start; k<=printable_end; k++){
-                if(valid_ns(k))
-                  newpairs.push_back(string(&j)+k);
+          if(!all->quiet){
+              cerr << *i << " ";
+              if (i->length() > 2)
+                  cerr << endl << "warning, ignoring characters after the 2nd.\n";
+              if (i->length() < 2) {
+                  cerr << endl << "error, quadratic features must involve two sets.\n";
+                  throw exception();
               }
-            }
           }
-        }
-        else{
-          newpairs.push_back(string(*i));
-        }    
+          //-q x:
+          if((*i)[0]!=':'&&(*i)[1]==':'){
+              newpairs.reserve(newpairs.size() + valid_ns_size);
+              for (char j=printable_start; j<=printable_end; j++){
+                  if(valid_ns(j))
+                      newpairs.push_back(string(1,(*i)[0])+j);
+              }
+          }
+          //-q :x
+          else if((*i)[0]==':'&&(*i)[1]!=':'){
+              newpairs.reserve(newpairs.size() + valid_ns_size);
+              for (char j=printable_start; j<=printable_end; j++){
+                  if(valid_ns(j))
+                      newpairs.push_back(string(&j)+(*i)[1]);
+              }
+          }
+          //-q ::
+          else if((*i)[0]==':'&&(*i)[1]==':'){
+              newpairs.reserve(newpairs.size() + valid_ns_size*valid_ns_size);
+              for (char j=printable_start; j<=printable_end; j++){
+                  if(valid_ns(j)){
+                      for (char k=printable_start; k<=printable_end; k++){
+                          if(valid_ns(k))
+                              newpairs.push_back(string(&j)+k);
+                      }
+                  }
+              }
+          }
+          else{
+              newpairs.push_back(string(*i));
+          }    
       }
       newpairs.swap(all->pairs);
       if(!all->quiet)
-        cerr<<endl;
-    }
+          cerr<<endl;
+  }
 
   if (vm.count("cubic"))
-    {
+  {
       all->triples = vm["cubic"].as< vector<string> >();
       if (!all->quiet)
-	{
-	  cerr << "creating cubic features for triples: ";
-	  for (vector<string>::iterator i = all->triples.begin(); i != all->triples.end();i++) {
-	    cerr << *i << " ";
-	    if (i->length() > 3)
-	      cerr << endl << "warning, ignoring characters after the 3rd.\n";
-	    if (i->length() < 3) {
-	      cerr << endl << "error, cubic features must involve three sets.\n";
-	      throw exception();
-	    }
-	  }
-	  cerr << endl;
-	}
-    }
+      {
+          cerr << "creating cubic features for triples: ";
+          for (vector<string>::iterator i = all->triples.begin(); i != all->triples.end();i++) {
+              cerr << *i << " ";
+              if (i->length() > 3)
+                  cerr << endl << "warning, ignoring characters after the 3rd.\n";
+              if (i->length() < 3) {
+                  cerr << endl << "error, cubic features must involve three sets.\n";
+                  throw exception();
+              }
+          }
+          cerr << endl;
+      }
+  }
 
   io_buf io_temp;
   parse_regressor_args(*all, vm, io_temp);
@@ -425,207 +433,207 @@ vw* parse_args(int argc, char *argv[])
   all->options_from_file_argv = VW::get_argv_from_string(all->options_from_file,all->options_from_file_argc);
 
   po::parsed_options parsed_file = po::command_line_parser(all->options_from_file_argc, all->options_from_file_argv).
-    style(po::command_line_style::default_style ^ po::command_line_style::allow_guessing).
-    options(desc).allow_unregistered().run();
+      style(po::command_line_style::default_style ^ po::command_line_style::allow_guessing).
+      options(desc).allow_unregistered().run();
 
   po::store(parsed_file, vm_file);
   po::notify(vm_file);
 
   for (size_t i = 0; i < 256; i++)
-    all->ignore[i] = false;
+      all->ignore[i] = false;
   all->ignore_some = false;
 
   if (vm.count("ignore"))
-    {
+  {
       all->ignore_some = true;
 
       vector<unsigned char> ignore = vm["ignore"].as< vector<unsigned char> >();
       for (vector<unsigned char>::iterator i = ignore.begin(); i != ignore.end();i++)
-	{
-	  all->ignore[*i] = true;
-	}
+      {
+          all->ignore[*i] = true;
+      }
       if (!all->quiet)
-	{
-	  cerr << "ignoring namespaces beginning with: ";
-	  for (vector<unsigned char>::iterator i = ignore.begin(); i != ignore.end();i++)
-	    cerr << *i << " ";
+      {
+          cerr << "ignoring namespaces beginning with: ";
+          for (vector<unsigned char>::iterator i = ignore.begin(); i != ignore.end();i++)
+              cerr << *i << " ";
 
-	  cerr << endl;
-	}
-    }
+          cerr << endl;
+      }
+  }
 
   if (vm.count("keep"))
-    {
+  {
       for (size_t i = 0; i < 256; i++)
-        all->ignore[i] = true;
+          all->ignore[i] = true;
 
       all->ignore_some = true;
 
       vector<unsigned char> keep = vm["keep"].as< vector<unsigned char> >();
       for (vector<unsigned char>::iterator i = keep.begin(); i != keep.end();i++)
-	{
-	  all->ignore[*i] = false;
-	}
+      {
+          all->ignore[*i] = false;
+      }
       if (!all->quiet)
-	{
-	  cerr << "using namespaces beginning with: ";
-	  for (vector<unsigned char>::iterator i = keep.begin(); i != keep.end();i++)
-	    cerr << *i << " ";
+      {
+          cerr << "using namespaces beginning with: ";
+          for (vector<unsigned char>::iterator i = keep.begin(); i != keep.end();i++)
+              cerr << *i << " ";
 
-	  cerr << endl;
-	}
-    }
+          cerr << endl;
+      }
+  }
 
   // matrix factorization enabled
   if (all->rank > 0) {
-    // store linear + 2*rank weights per index, round up to power of two
-    float temp = ceilf(logf((float)(all->rank*2+1)) / logf (2.f));
-    all->reg.stride = 1 << (int) temp;
-    all->random_weights = true;
+      // store linear + 2*rank weights per index, round up to power of two
+      float temp = ceilf(logf((float)(all->rank*2+1)) / logf (2.f));
+      all->reg.stride = 1 << (int) temp;
+      all->random_weights = true;
 
-    if ( vm.count("adaptive") )
+      if ( vm.count("adaptive") )
       {
-	cerr << "adaptive is not implemented for matrix factorization" << endl;
-        throw exception();
+          cerr << "adaptive is not implemented for matrix factorization" << endl;
+          throw exception();
       }
-    if ( vm.count("normalized") )
+      if ( vm.count("normalized") )
       {
-	cerr << "normalized is not implemented for matrix factorization" << endl;
-        throw exception();
+          cerr << "normalized is not implemented for matrix factorization" << endl;
+          throw exception();
       }
-    if ( vm.count("exact_adaptive_norm") )
+      if ( vm.count("exact_adaptive_norm") )
       {
-	cerr << "normalized adaptive updates is not implemented for matrix factorization" << endl;
-        throw exception();
+          cerr << "normalized adaptive updates is not implemented for matrix factorization" << endl;
+          throw exception();
       }
-    if (vm.count("bfgs") || vm.count("conjugate_gradient"))
+      if (vm.count("bfgs") || vm.count("conjugate_gradient"))
       {
-	cerr << "bfgs is not implemented for matrix factorization" << endl;
-	throw exception();
+          cerr << "bfgs is not implemented for matrix factorization" << endl;
+          throw exception();
       }	
 
-    //default initial_t to 1 instead of 0
-    if(!vm.count("initial_t")) {
-      all->sd->t = 1.f;
-      all->sd->weighted_unlabeled_examples = 1.f;
-      all->initial_t = 1.f;
-    }
+      //default initial_t to 1 instead of 0
+      if(!vm.count("initial_t")) {
+          all->sd->t = 1.f;
+          all->sd->weighted_unlabeled_examples = 1.f;
+          all->initial_t = 1.f;
+      }
   }
 
   if (vm.count("noconstant"))
-    all->add_constant = false;
+      all->add_constant = false;
 
   //if (vm.count("nonormalize"))
   //  all->nonormalize = true;
 
   if (vm.count("lda")) 
-    all->l = LDA::setup(*all, to_pass_further, vm);
+      all->l = LDA::setup(*all, to_pass_further, vm);
 
   if (!vm.count("lda") && !all->adaptive && !all->normalized_updates) 
-    all->eta *= powf((float)(all->sd->t), all->power_t);
-  
+      all->eta *= powf((float)(all->sd->t), all->power_t);
+
   if (vm.count("readable_model"))
-    all->text_regressor_name = vm["readable_model"].as<string>();
+      all->text_regressor_name = vm["readable_model"].as<string>();
 
   if (vm.count("invert_hash")){
-    all->inv_hash_regressor_name = vm["invert_hash"].as<string>();
+      all->inv_hash_regressor_name = vm["invert_hash"].as<string>();
 
-    all->hash_inv = true;   
+      all->hash_inv = true;   
   }
-  
+
   if (vm.count("save_per_pass"))
-    all->save_per_pass = true;
+      all->save_per_pass = true;
 
   if (vm.count("save_resume"))
-    all->save_resume = true;
+      all->save_resume = true;
 
   if (vm.count("min_prediction"))
-    all->sd->min_label = vm["min_prediction"].as<float>();
+      all->sd->min_label = vm["min_prediction"].as<float>();
   if (vm.count("max_prediction"))
-    all->sd->max_label = vm["max_prediction"].as<float>();
+      all->sd->max_label = vm["max_prediction"].as<float>();
   if (vm.count("min_prediction") || vm.count("max_prediction") || vm.count("testonly"))
-    all->set_minmax = noop_mm;
+      all->set_minmax = noop_mm;
 
   string loss_function;
   if(vm.count("loss_function"))
-    loss_function = vm["loss_function"].as<string>();
+      loss_function = vm["loss_function"].as<string>();
   else
-    loss_function = "squaredloss";
+      loss_function = "squaredloss";
   float loss_parameter = 0.0;
   if(vm.count("quantile_tau"))
-    loss_parameter = vm["quantile_tau"].as<float>();
+      loss_parameter = vm["quantile_tau"].as<float>();
 
   all->is_noop = false;
   if (vm.count("noop")) 
-    all->l = NOOP::setup(*all);
-  
+      all->l = NOOP::setup(*all);
+
   if (all->rank != 0) 
-    all->l = GDMF::setup(*all);
+      all->l = GDMF::setup(*all);
 
   all->loss = getLossFunction(all, loss_function, (float)loss_parameter);
 
   if (pow((double)all->eta_decay_rate, (double)all->numpasses) < 0.0001 )
-    cerr << "Warning: the learning rate for the last pass is multiplied by: " << pow((double)all->eta_decay_rate, (double)all->numpasses)
-	 << " adjust --decay_learning_rate larger to avoid this." << endl;
+      cerr << "Warning: the learning rate for the last pass is multiplied by: " << pow((double)all->eta_decay_rate, (double)all->numpasses)
+          << " adjust --decay_learning_rate larger to avoid this." << endl;
 
   if (!all->quiet)
-    {
+  {
       cerr << "Num weight bits = " << all->num_bits << endl;
       cerr << "learning rate = " << all->eta << endl;
       cerr << "initial_t = " << all->sd->t << endl;
       cerr << "power_t = " << all->power_t << endl;
       if (all->numpasses > 1)
-	cerr << "decay_learning_rate = " << all->eta_decay_rate << endl;
+          cerr << "decay_learning_rate = " << all->eta_decay_rate << endl;
       if (all->rank > 0)
-	cerr << "rank = " << all->rank << endl;
-    }
+          cerr << "rank = " << all->rank << endl;
+  }
 
   if (vm.count("predictions")) {
-    if (!all->quiet)
-      cerr << "predictions = " <<  vm["predictions"].as< string >() << endl;
-    if (strcmp(vm["predictions"].as< string >().c_str(), "stdout") == 0)
+      if (!all->quiet)
+          cerr << "predictions = " <<  vm["predictions"].as< string >() << endl;
+      if (strcmp(vm["predictions"].as< string >().c_str(), "stdout") == 0)
       {
-	all->final_prediction_sink.push_back((size_t) 1);//stdout
+          all->final_prediction_sink.push_back((size_t) 1);//stdout
       }
-    else
+      else
       {
-	const char* fstr = (vm["predictions"].as< string >().c_str());
-	int f;
+          const char* fstr = (vm["predictions"].as< string >().c_str());
+          int f;
 #ifdef _WIN32
-	_sopen_s(&f, fstr, _O_CREAT|_O_WRONLY|_O_BINARY|_O_TRUNC, _SH_DENYWR, _S_IREAD|_S_IWRITE);
+          _sopen_s(&f, fstr, _O_CREAT|_O_WRONLY|_O_BINARY|_O_TRUNC, _SH_DENYWR, _S_IREAD|_S_IWRITE);
 #else
-	f = open(fstr, O_CREAT|O_WRONLY|O_LARGEFILE|O_TRUNC,0666);
+          f = open(fstr, O_CREAT|O_WRONLY|O_LARGEFILE|O_TRUNC,0666);
 #endif
-	if (f < 0)
-	  cerr << "Error opening the predictions file: " << fstr << endl;
-	all->final_prediction_sink.push_back((size_t) f);
+          if (f < 0)
+              cerr << "Error opening the predictions file: " << fstr << endl;
+          all->final_prediction_sink.push_back((size_t) f);
       }
   }
 
   if (vm.count("raw_predictions")) {
-    if (!all->quiet)
-      cerr << "raw predictions = " <<  vm["raw_predictions"].as< string >() << endl;
-    if (strcmp(vm["raw_predictions"].as< string >().c_str(), "stdout") == 0)
-      all->raw_prediction = 1;//stdout
-    else
-	{
-	  const char* t = vm["raw_predictions"].as< string >().c_str();
-	  int f;
+      if (!all->quiet)
+          cerr << "raw predictions = " <<  vm["raw_predictions"].as< string >() << endl;
+      if (strcmp(vm["raw_predictions"].as< string >().c_str(), "stdout") == 0)
+          all->raw_prediction = 1;//stdout
+      else
+      {
+          const char* t = vm["raw_predictions"].as< string >().c_str();
+          int f;
 #ifdef _WIN32
-	  _sopen_s(&f, t, _O_CREAT|_O_WRONLY|_O_BINARY|_O_TRUNC, _SH_DENYWR, _S_IREAD|_S_IWRITE);
+          _sopen_s(&f, t, _O_CREAT|_O_WRONLY|_O_BINARY|_O_TRUNC, _SH_DENYWR, _S_IREAD|_S_IWRITE);
 #else
-	  f = open(t, O_CREAT|O_WRONLY|O_LARGEFILE|O_TRUNC,0666);
+          f = open(t, O_CREAT|O_WRONLY|O_LARGEFILE|O_TRUNC,0666);
 #endif
-	  all->raw_prediction = f;
-	}
+          all->raw_prediction = f;
+      }
   }
 
   if (vm.count("audit")){
-    all->audit = true;
+      all->audit = true;
   }
 
   if (vm.count("sendto"))
-    all->l = SENDER::setup(*all, vm, all->pairs);
+      all->l = SENDER::setup(*all, vm, all->pairs);
 
   // load rest of regressor
   all->l.save_load(io_temp, true, false);
@@ -634,265 +642,266 @@ vw* parse_args(int argc, char *argv[])
   parse_mask_regressor_args(*all, vm);
 
   if (all->l1_lambda < 0.) {
-    cerr << "l1_lambda should be nonnegative: resetting from " << all->l1_lambda << " to 0" << endl;
-    all->l1_lambda = 0.;
+      cerr << "l1_lambda should be nonnegative: resetting from " << all->l1_lambda << " to 0" << endl;
+      all->l1_lambda = 0.;
   }
   if (all->l2_lambda < 0.) {
-    cerr << "l2_lambda should be nonnegative: resetting from " << all->l2_lambda << " to 0" << endl;
-    all->l2_lambda = 0.;
+      cerr << "l2_lambda should be nonnegative: resetting from " << all->l2_lambda << " to 0" << endl;
+      all->l2_lambda = 0.;
   }
   all->reg_mode += (all->l1_lambda > 0.) ? 1 : 0;
   all->reg_mode += (all->l2_lambda > 0.) ? 2 : 0;
   if (!all->quiet)
-    {
+  {
       if (all->reg_mode %2)
-	cerr << "using l1 regularization = " << all->l1_lambda << endl;
+          cerr << "using l1 regularization = " << all->l1_lambda << endl;
       if (all->reg_mode > 1)
-	cerr << "using l2 regularization = " << all->l2_lambda << endl;
-    }
+          cerr << "using l2 regularization = " << all->l2_lambda << endl;
+  }
 
   bool got_mc = false;
   bool got_cs = false;
   bool got_cb = false;
 
   if(vm.count("nn") || vm_file.count("nn") ) 
-    all->l = NN::setup(*all, to_pass_further, vm, vm_file);
+      all->l = NN::setup(*all, to_pass_further, vm, vm_file);
 
   if(vm.count("autolink") || vm_file.count("autolinnk") ) 
-    all->l = ALINK::setup(*all, to_pass_further, vm, vm_file);
-  
+      all->l = ALINK::setup(*all, to_pass_further, vm, vm_file);
+
   if (vm.count("binary") || vm_file.count("binary"))
-    all->l = BINARY::setup(*all, to_pass_further, vm, vm_file);
+      all->l = BINARY::setup(*all, to_pass_further, vm, vm_file);
 
   if(vm.count("oaa") || vm_file.count("oaa") ) {
-    if (got_mc) { cerr << "error: cannot specify multiple MC learners" << endl; throw exception(); }
+      if (got_mc) { cerr << "error: cannot specify multiple MC learners" << endl; throw exception(); }
 
-    all->l = OAA::setup(*all, to_pass_further, vm, vm_file);
-    got_mc = true;
+      all->l = OAA::setup(*all, to_pass_further, vm, vm_file);
+      got_mc = true;
   }
-  
-  if (vm.count("ect") || vm_file.count("ect") ) {
-    if (got_mc) { cerr << "error: cannot specify multiple MC learners" << endl; throw exception(); }
 
-    all->l = ECT::setup(*all, to_pass_further, vm, vm_file);
-    got_mc = true;
+  if (vm.count("ect") || vm_file.count("ect") ) {
+      if (got_mc) { cerr << "error: cannot specify multiple MC learners" << endl; throw exception(); }
+
+      all->l = ECT::setup(*all, to_pass_further, vm, vm_file);
+      got_mc = true;
   }
 
   if(vm.count("csoaa") || vm_file.count("csoaa") ) {
-    if (got_cs) { cerr << "error: cannot specify multiple CS learners" << endl; throw exception(); }
-    
-    all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);
-    got_cs = true;
+      if (got_cs) { cerr << "error: cannot specify multiple CS learners" << endl; throw exception(); }
+
+      all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);
+      got_cs = true;
   }
 
   if(vm.count("wap") || vm_file.count("wap") ) {
-    if (got_cs) { cerr << "error: cannot specify multiple CS learners" << endl; throw exception(); }
-    
-    all->l = WAP::setup(*all, to_pass_further, vm, vm_file);
-    got_cs = true;
+      if (got_cs) { cerr << "error: cannot specify multiple CS learners" << endl; throw exception(); }
+
+      all->l = WAP::setup(*all, to_pass_further, vm, vm_file);
+      got_cs = true;
   }
 
   if(vm.count("csoaa_ldf") || vm_file.count("csoaa_ldf")) {
-    if (got_cs) { cerr << "error: cannot specify multiple CS learners" << endl; throw exception(); }
+      if (got_cs) { cerr << "error: cannot specify multiple CS learners" << endl; throw exception(); }
 
-    all->l = CSOAA_AND_WAP_LDF::setup(*all, to_pass_further, vm, vm_file);
-    got_cs = true;
+      all->l = CSOAA_AND_WAP_LDF::setup(*all, to_pass_further, vm, vm_file);
+      got_cs = true;
   }
 
   if(vm.count("wap_ldf") || vm_file.count("wap_ldf") ) {
-    if (got_cs) { cerr << "error: cannot specify multiple CS learners" << endl; throw exception(); }
+      if (got_cs) { cerr << "error: cannot specify multiple CS learners" << endl; throw exception(); }
 
-    all->l = CSOAA_AND_WAP_LDF::setup(*all, to_pass_further, vm, vm_file);
-    got_cs = true;
+      all->l = CSOAA_AND_WAP_LDF::setup(*all, to_pass_further, vm, vm_file);
+      got_cs = true;
   }
 
   if( vm.count("cb") || vm_file.count("cb") )
   {
-    if(!got_cs) {
-      if( vm_file.count("cb") ) vm.insert(pair<string,po::variable_value>(string("csoaa"),vm_file["cb"]));
-      else vm.insert(pair<string,po::variable_value>(string("csoaa"),vm["cb"]));
+      if(!got_cs) {
+          if( vm_file.count("cb") ) vm.insert(pair<string,po::variable_value>(string("csoaa"),vm_file["cb"]));
+          else vm.insert(pair<string,po::variable_value>(string("csoaa"),vm["cb"]));
 
-      all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);  // default to CSOAA unless wap is specified
-      got_cs = true;
-    }
+          all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);  // default to CSOAA unless wap is specified
+          got_cs = true;
+      }
 
-    all->l = CB::setup(*all, to_pass_further, vm, vm_file);
-    got_cb = true;
+      all->l = CB::setup(*all, to_pass_further, vm, vm_file);
+      got_cb = true;
   }
 
   if (vm.count("searn") || vm_file.count("searn") ) { 
-    if (vm.count("searnimp") || vm_file.count("searnimp")) {
-      cerr << "fail: cannot have both --searn and --searnimp" << endl;
-      throw exception();
-    }
-    if (!got_cs && !got_cb) {
-      if( vm_file.count("searn") ) vm.insert(pair<string,po::variable_value>(string("csoaa"),vm_file["searn"]));
-      else vm.insert(pair<string,po::variable_value>(string("csoaa"),vm["searn"]));
-      
-      all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);  // default to CSOAA unless others have been specified
-      got_cs = true;
-    }
-    all->l = Searn::setup(*all, to_pass_further, vm, vm_file);
+      if (vm.count("searnimp") || vm_file.count("searnimp")) {
+          cerr << "fail: cannot have both --searn and --searnimp" << endl;
+          throw exception();
+      }
+      if (!got_cs && !got_cb) {
+          if( vm_file.count("searn") ) vm.insert(pair<string,po::variable_value>(string("csoaa"),vm_file["searn"]));
+          else vm.insert(pair<string,po::variable_value>(string("csoaa"),vm["searn"]));
+
+          all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);  // default to CSOAA unless others have been specified
+          got_cs = true;
+      }
+      all->l = Searn::setup(*all, to_pass_further, vm, vm_file);
   }
 
   if (vm.count("searnimp") || vm_file.count("searnimp") ) { 
-    if (!got_cs && !got_cb) {
-      if( vm_file.count("searnimp") ) vm.insert(pair<string,po::variable_value>(string("csoaa"),vm_file["searnimp"]));
-      else vm.insert(pair<string,po::variable_value>(string("csoaa"),vm["searnimp"]));
-      
-      all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);  // default to CSOAA unless others have been specified
-      got_cs = true;
-    }
-    all->searnstr = (ImperativeSearn::searn*)calloc(1, sizeof(ImperativeSearn::searn));
-    all->l = ImperativeSearn::setup(*all, to_pass_further, vm, vm_file);
+      if (!got_cs && !got_cb) {
+          if( vm_file.count("searnimp") ) vm.insert(pair<string,po::variable_value>(string("csoaa"),vm_file["searnimp"]));
+          else vm.insert(pair<string,po::variable_value>(string("csoaa"),vm["searnimp"]));
+
+          all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);  // default to CSOAA unless others have been specified
+          got_cs = true;
+      }
+      all->searnstr = (ImperativeSearn::searn*)calloc(1, sizeof(ImperativeSearn::searn));
+      all->l = ImperativeSearn::setup(*all, to_pass_further, vm, vm_file);
   }
 
   if (got_cb && got_mc) {
-    cerr << "error: doesn't make sense to do both MC learning and CB learning" << endl;
-    throw exception();
+      cerr << "error: doesn't make sense to do both MC learning and CB learning" << endl;
+      throw exception();
   }
 
   if (to_pass_further.size() > 0) {
-    bool is_actually_okay = false;
+      bool is_actually_okay = false;
 
-    // special case to try to emulate the missing -d
-    if ((to_pass_further.size() == 1) &&
-        (to_pass_further[to_pass_further.size()-1] == last_unrec_arg)) {
+      // special case to try to emulate the missing -d
+      if ((to_pass_further.size() == 1) &&
+              (to_pass_further[to_pass_further.size()-1] == last_unrec_arg)) {
 
-      int f = io_buf().open_file(last_unrec_arg.c_str(), all->stdin_off, io_buf::READ);
-      if (f != -1) {
+          int f = io_buf().open_file(last_unrec_arg.c_str(), all->stdin_off, io_buf::READ);
+          if (f != -1) {
 #ifdef _WIN32
-		 _close(f);
+              _close(f);
 #else
-		  close(f);
+              close(f);
 #endif
-        //cerr << "warning: final argument '" << last_unrec_arg << "' assumed to be input file; in the future, please use -d" << endl;
-        all->data_filename = last_unrec_arg;
-        if (ends_with(last_unrec_arg, ".gz"))
-          set_compressed(all->p);
-        is_actually_okay = true;
+              //cerr << "warning: final argument '" << last_unrec_arg << "' assumed to be input file; in the future, please use -d" << endl;
+              all->data_filename = last_unrec_arg;
+              if (ends_with(last_unrec_arg, ".gz"))
+                  set_compressed(all->p);
+              is_actually_okay = true;
+          }
       }
-    }
 
-    if (!is_actually_okay) {
-      cerr << "unrecognized options:";
-      for (size_t i=0; i<to_pass_further.size(); i++)
-        cerr << " " << to_pass_further[i];
-      cerr << endl;
-      throw exception();
-    }
+      if (!is_actually_okay) {
+          cerr << "unrecognized options:";
+          for (size_t i=0; i<to_pass_further.size(); i++)
+              cerr << " " << to_pass_further[i];
+          cerr << endl;
+          throw exception();
+      }
   }
 
+  //parse input source arg
   parse_source_args(*all, vm, all->quiet,all->numpasses);
 
   // force stride * weights_per_problem to be divisible by 2 to avoid 32-bit overflow
   uint32_t i = 0;
   while (all->reg.stride * all->weights_per_problem  > (uint32_t)(1 << i))
-    i++;
+      i++;
   all->weights_per_problem = (1 << i) / all->reg.stride;
 
   return all;
 }
 
 namespace VW {
-  void cmd_string_replace_value( string& cmd, string flag_to_replace, string new_value )
-  {
-    flag_to_replace.append(" "); //add a space to make sure we obtain the right flag in case 2 flags start with the same set of characters
-    size_t pos = cmd.find(flag_to_replace);
-    if( pos == string::npos ) {
-      //flag currently not present in command string, so just append it to command string
-      cmd.append(" ");
-      cmd.append(flag_to_replace);
-      cmd.append(new_value);
+    void cmd_string_replace_value( string& cmd, string flag_to_replace, string new_value )
+    {
+        flag_to_replace.append(" "); //add a space to make sure we obtain the right flag in case 2 flags start with the same set of characters
+        size_t pos = cmd.find(flag_to_replace);
+        if( pos == string::npos ) {
+            //flag currently not present in command string, so just append it to command string
+            cmd.append(" ");
+            cmd.append(flag_to_replace);
+            cmd.append(new_value);
+        }
+        else {
+            //flag is present, need to replace old value with new value
+
+            //compute position after flag_to_replace
+            pos += flag_to_replace.size();
+
+            //now pos is position where value starts
+            //find position of next space
+            size_t pos_after_value = cmd.find(" ",pos);
+            if(pos_after_value == string::npos) {
+                //we reach the end of the string, so replace the all characters after pos by new_value
+                cmd.replace(pos,cmd.size()-pos,new_value);
+            }
+            else {
+                //replace characters between pos and pos_after_value by new_value
+                cmd.replace(pos,pos_after_value-pos,new_value);
+            }
+        }
     }
-    else {
-      //flag is present, need to replace old value with new value
-      
-      //compute position after flag_to_replace
-      pos += flag_to_replace.size();
 
-      //now pos is position where value starts
-      //find position of next space
-      size_t pos_after_value = cmd.find(" ",pos);
-      if(pos_after_value == string::npos) {
-        //we reach the end of the string, so replace the all characters after pos by new_value
-        cmd.replace(pos,cmd.size()-pos,new_value);
-      }
-      else {
-        //replace characters between pos and pos_after_value by new_value
-        cmd.replace(pos,pos_after_value-pos,new_value);
-      }
+    char** get_argv_from_string(string s, int& argc)
+    {
+        char* c = (char*)calloc(s.length()+3, sizeof(char));
+        c[0] = 'b';
+        c[1] = ' ';
+        strcpy(c+2, s.c_str());
+        substring ss = {c, c+s.length()+2};
+        v_array<substring> foo;
+        foo.end_array = foo.begin = foo.end = NULL;
+        tokenize(' ', ss, foo);
+
+        char** argv = (char**)calloc(foo.size(), sizeof(char*));
+        for (size_t i = 0; i < foo.size(); i++)
+        {
+            *(foo[i].end) = '\0';
+            argv[i] = (char*)calloc(foo[i].end-foo[i].begin+1, sizeof(char));
+            sprintf(argv[i],"%s",foo[i].begin);
+        }
+
+        argc = (int)foo.size();
+        free(c);
+        foo.delete_v();
+        return argv;
     }
-  }
 
-  char** get_argv_from_string(string s, int& argc)
-  {
-    char* c = (char*)calloc(s.length()+3, sizeof(char));
-    c[0] = 'b';
-    c[1] = ' ';
-    strcpy(c+2, s.c_str());
-    substring ss = {c, c+s.length()+2};
-    v_array<substring> foo;
-    foo.end_array = foo.begin = foo.end = NULL;
-    tokenize(' ', ss, foo);
-    
-    char** argv = (char**)calloc(foo.size(), sizeof(char*));
-    for (size_t i = 0; i < foo.size(); i++)
-      {
-	*(foo[i].end) = '\0';
-	argv[i] = (char*)calloc(foo[i].end-foo[i].begin+1, sizeof(char));
-        sprintf(argv[i],"%s",foo[i].begin);
-      }
+    vw* initialize(string s)
+    {
+        int argc = 0;
+        s += " --no_stdin";
+        char** argv = get_argv_from_string(s,argc);
 
-    argc = (int)foo.size();
-    free(c);
-    foo.delete_v();
-    return argv;
-  }
- 
-  vw* initialize(string s)
-  {
-    int argc = 0;
-    s += " --no_stdin";
-    char** argv = get_argv_from_string(s,argc);
-    
-    vw* all = parse_args(argc, argv);
-    
-    initialize_examples(*all);
+        vw* all = parse_args(argc, argv);
 
-    for(int i = 0; i < argc; i++)
-      free(argv[i]);
-    free (argv);
+        initialize_examples(*all);
 
-    return all;
-  }
+        for(int i = 0; i < argc; i++)
+            free(argv[i]);
+        free (argv);
 
-  void finish(vw& all)
-  {
-    finalize_regressor(all, all.final_regressor_name);
-    all.l.finish();
-    if (all.reg.weight_vector != NULL)
-      free(all.reg.weight_vector);
-    if (all.searnstr != NULL) free(all.searnstr);
-    free_parser(all);
-    finalize_source(all.p);
-    free(all.p->lp);
-    all.p->parse_name.erase();
-    all.p->parse_name.delete_v();
-    free(all.p);
-    free(all.sd);
-    for (int i = 0; i < all.options_from_file_argc; i++)
-      free(all.options_from_file_argv[i]);
-    free(all.options_from_file_argv);
-    for (size_t i = 0; i < all.final_prediction_sink.size(); i++)
-      if (all.final_prediction_sink[i] != 1)
+        return all;
+    }
+
+    void finish(vw& all)
+    {
+        finalize_regressor(all, all.final_regressor_name);
+        all.l.finish();
+        if (all.reg.weight_vector != NULL)
+            free(all.reg.weight_vector);
+        if (all.searnstr != NULL) free(all.searnstr);
+        free_parser(all);
+        finalize_source(all.p);
+        free(all.p->lp);
+        all.p->parse_name.erase();
+        all.p->parse_name.delete_v();
+        free(all.p);
+        free(all.sd);
+        for (int i = 0; i < all.options_from_file_argc; i++)
+            free(all.options_from_file_argv[i]);
+        free(all.options_from_file_argv);
+        for (size_t i = 0; i < all.final_prediction_sink.size(); i++)
+            if (all.final_prediction_sink[i] != 1)
 #ifdef _WIN32
-	_close(all.final_prediction_sink[i]);
+                _close(all.final_prediction_sink[i]);
 #else
-	close(all.final_prediction_sink[i]);
+        close(all.final_prediction_sink[i]);
 #endif
-    all.final_prediction_sink.delete_v();
-    delete all.loss;
-    delete &all;
-  }
+        all.final_prediction_sink.delete_v();
+        delete all.loss;
+        delete &all;
+    }
 }
