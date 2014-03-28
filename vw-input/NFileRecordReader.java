@@ -1,7 +1,6 @@
-package toutiao;
+package vw;
 
 import java.io.IOException;
-//import toutiao.FileLineWritable;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;

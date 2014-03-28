@@ -1,4 +1,4 @@
-package toutiao;
+package vw;
 
 import java.io.IOException;
 import java.util.*;
@@ -20,7 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.lang.ArrayUtils;
 
-import toutiao.NFileRecordReader;
+import vw.NFileRecordReader;
 
 
 
