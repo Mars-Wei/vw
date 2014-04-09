@@ -159,8 +159,6 @@ struct vw {
   char** options_from_file_argv;
   int options_from_file_argc;
 
-  bool searn;
-  void* /*ImperativeSearn::searn_struct*/ searnstr;
 
   uint32_t weights_per_problem; //this stores the current number of "weight vector" required by the based learner, which is used to compute offsets when composing reductions
 

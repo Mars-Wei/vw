@@ -114,6 +114,7 @@ public:
   }
   
   inline void maybeFeature(){
+//read a feature
     if(*reading_head == ' ' || *reading_head == '\t' || *reading_head == '|'|| reading_head == endLine || *reading_head == '\r' ){
       // maybeFeature --> ø
     }else {

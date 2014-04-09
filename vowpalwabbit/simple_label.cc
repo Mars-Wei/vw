@@ -78,7 +78,7 @@ void delete_simple_label(void* v)
 }
 
 void parse_simple_label(parser* p, shared_data* sd, void* v, v_array<substring>& words)
-{
+{//parse the instance label
 
   //cerr << "call parse_simple_label" << words.size()  << endl;
   label_data* ld = (label_data*)v;

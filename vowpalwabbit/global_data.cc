@@ -290,7 +290,6 @@ vw::vw()
   stdout_fileno = fileno(stdout);
   #endif
 
-  searn = false;
 
   nonormalize = false;
   l1_lambda = 0.0;

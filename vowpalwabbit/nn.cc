@@ -9,9 +9,9 @@ license as described in the file LICENSE.
 #include <sstream>
 
 #include "constant.h"
-#include "oaa.h"
 #include "simple_label.h"
 #include "cache.h"
+#include "gd.h"
 #include "v_hashmap.h"
 #include "rand48.h"
 #include "vw.h"

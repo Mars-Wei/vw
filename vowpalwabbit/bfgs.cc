@@ -753,208 +753,208 @@ void learn(void* d, example* ec)
   assert(ec->in_use);
 
   if (ec->end_pass && b->current_pass <= b->final_pass) 
-      {
-	int status = process_pass(*all, *b);
-	if (status != LEARN_OK && b->final_pass > b->current_pass) {
-	  b->final_pass = b->current_pass;
-	}
-	if (b->output_regularizer && b->current_pass== b->final_pass) {
-	  zero_preconditioner(*all);
-	  b->preconditioner_pass = true;
-	}
+  {
+      int status = process_pass(*all, *b);
+      if (status != LEARN_OK && b->final_pass > b->current_pass) {
+          b->final_pass = b->current_pass;
       }
+      if (b->output_regularizer && b->current_pass== b->final_pass) {
+          zero_preconditioner(*all);
+          b->preconditioner_pass = true;
+      }
+  }
 
   if (b->current_pass <= b->final_pass)
-    if (!command_example(all,ec))
+      if (!command_example(all,ec))
       {
-	if (test_example(ec))
-	  ec->final_prediction = bfgs_predict(*all,ec);//w[0]
-	else
-	  process_example(*all, *b, ec);
+          if (test_example(ec))
+              ec->final_prediction = bfgs_predict(*all,ec);//w[0]
+          else
+              process_example(*all, *b, ec);
       }
 }
 
 void finish(void* d)
 {
-  bfgs* b = (bfgs*)d;
+    bfgs* b = (bfgs*)d;
 
-  b->predictions.delete_v();
-  free(b->mem);
-  free(b->rho);
-  free(b->alpha);
-  free(b);
+    b->predictions.delete_v();
+    free(b->mem);
+    free(b->rho);
+    free(b->alpha);
+    free(b);
 }
 
 void save_load_regularizer(vw& all, bfgs& b, io_buf& model_file, bool read, bool text)
 {
-  char buff[512];
-  int c = 0;
-  uint32_t stride = all.reg.stride;
-  uint32_t length = 2*(1 << all.num_bits);
-  uint32_t i = 0;
-  size_t brw = 1;
-  do 
+    char buff[512];
+    int c = 0;
+    uint32_t stride = all.reg.stride;
+    uint32_t length = 2*(1 << all.num_bits);
+    uint32_t i = 0;
+    size_t brw = 1;
+    do 
     {
-      brw = 1;
-      weight* v;
-      if (read)
-	{
-	  c++;
-	  brw = bin_read_fixed(model_file, (char*)&i, sizeof(i),"");
-	  if (brw > 0)
-	    {
-	      assert (i< length);		
-	      v = &(b.regularizers[i]);
-	      if (brw > 0)
-		brw += bin_read_fixed(model_file, (char*)v, sizeof(*v), "");
-	    }
-	}
-      else // write binary or text
-	{
-	  v = &(b.regularizers[i]);
-	  if (*v != 0.)
-	    {
-	      c++;
-	      int text_len = sprintf(buff, "%d", i);
-	      brw = bin_text_write_fixed(model_file,(char *)&i, sizeof (i),
-					 buff, text_len, text);
-	      
-	      text_len = sprintf(buff, ":%f\n", *v);
-	      brw+= bin_text_write_fixed(model_file,(char *)v, sizeof (*v),
-					 buff, text_len, text);
-	      if (read && i%2 == 1) // This is the prior mean
-		all.reg.weight_vector[(i/2*stride)] = *v;
-	    }
-	}
-      if (!read)
-	i++;
+        brw = 1;
+        weight* v;
+        if (read)
+        {
+            c++;
+            brw = bin_read_fixed(model_file, (char*)&i, sizeof(i),"");
+            if (brw > 0)
+            {
+                assert (i< length);		
+                v = &(b.regularizers[i]);
+                if (brw > 0)
+                    brw += bin_read_fixed(model_file, (char*)v, sizeof(*v), "");
+            }
+        }
+        else // write binary or text
+        {
+            v = &(b.regularizers[i]);
+            if (*v != 0.)
+            {
+                c++;
+                int text_len = sprintf(buff, "%d", i);
+                brw = bin_text_write_fixed(model_file,(char *)&i, sizeof (i),
+                        buff, text_len, text);
+
+                text_len = sprintf(buff, ":%f\n", *v);
+                brw+= bin_text_write_fixed(model_file,(char *)v, sizeof (*v),
+                        buff, text_len, text);
+                if (read && i%2 == 1) // This is the prior mean
+                    all.reg.weight_vector[(i/2*stride)] = *v;
+            }
+        }
+        if (!read)
+            i++;
     }  
-  while ((!read && i < length) || (read && brw >0));
+    while ((!read && i < length) || (read && brw >0));
 }
 
 
 void save_load(void* d, io_buf& model_file, bool read, bool text)
 {
-  bfgs* b = (bfgs*)d;
-  vw* all = b->all;
+    bfgs* b = (bfgs*)d;
+    vw* all = b->all;
 
-  uint32_t length = 1 << all->num_bits;
+    uint32_t length = 1 << all->num_bits;
 
-  if (read)
+    if (read)
     {
-      initialize_regressor(*all);
-      if (all->per_feature_regularizer_input != "")
-	{
-	  b->regularizers = (weight *)calloc(2*length, sizeof(weight));
-	  if (b->regularizers == NULL)
-	    {
-	      cerr << all->program_name << ": Failed to allocate regularizers array: try decreasing -b <bits>" << endl;
-	      throw exception();
-	    }
-	}
-      int m = all->m;
-      
-      b->mem_stride = (m==0) ? CG_EXTRA : 2*m;
-      b->mem = (float*) malloc(sizeof(float)*all->length()*(b->mem_stride));
-      b->rho = (double*) malloc(sizeof(double)*m);
-      b->alpha = (double*) malloc(sizeof(double)*m);
-      
-      if (!all->quiet) 
-	{
-	  fprintf(stderr, "m = %d\nAllocated %luM for weights and mem\n", m, (long unsigned int)all->length()*(sizeof(float)*(b->mem_stride)+sizeof(weight)*all->reg.stride) >> 20);
-	}
-      
-      b->net_time = 0.0;
-      ftime(&b->t_start_global);
-      
-      if (!all->quiet)
-	{
-	  const char * header_fmt = "%2s %-10s\t%-10s\t%-10s\t %-10s\t%-10s\t%-10s\t%-10s\t%-10s\t%-10s\n";
-	  fprintf(stderr, header_fmt,
-		  "##", "avg. loss", "der. mag.", "d. m. cond.", "wolfe1", "wolfe2", "mix fraction", "curvature", "dir. magnitude", "step size");
-	  cerr.precision(5);
-	}
-      
-      if (b->regularizers != NULL)
-	all->l2_lambda = 1; // To make sure we are adding the regularization
-      b->output_regularizer =  (all->per_feature_regularizer_output != "" || all->per_feature_regularizer_text != "");
-      reset_state(*all, *b, false);
+        initialize_regressor(*all);
+        if (all->per_feature_regularizer_input != "")
+        {
+            b->regularizers = (weight *)calloc(2*length, sizeof(weight));
+            if (b->regularizers == NULL)
+            {
+                cerr << all->program_name << ": Failed to allocate regularizers array: try decreasing -b <bits>" << endl;
+                throw exception();
+            }
+        }
+        int m = all->m;
+
+        b->mem_stride = (m==0) ? CG_EXTRA : 2*m;
+        b->mem = (float*) malloc(sizeof(float)*all->length()*(b->mem_stride));
+        b->rho = (double*) malloc(sizeof(double)*m);
+        b->alpha = (double*) malloc(sizeof(double)*m);
+
+        if (!all->quiet) 
+        {
+            fprintf(stderr, "m = %d\nAllocated %luM for weights and mem\n", m, (long unsigned int)all->length()*(sizeof(float)*(b->mem_stride)+sizeof(weight)*all->reg.stride) >> 20);
+        }
+
+        b->net_time = 0.0;
+        ftime(&b->t_start_global);
+
+        if (!all->quiet)
+        {
+            const char * header_fmt = "%2s %-10s\t%-10s\t%-10s\t %-10s\t%-10s\t%-10s\t%-10s\t%-10s\t%-10s\n";
+            fprintf(stderr, header_fmt,
+                    "##", "avg. loss", "der. mag.", "d. m. cond.", "wolfe1", "wolfe2", "mix fraction", "curvature", "dir. magnitude", "step size");
+            cerr.precision(5);
+        }
+
+        if (b->regularizers != NULL)
+            all->l2_lambda = 1; // To make sure we are adding the regularization
+        b->output_regularizer =  (all->per_feature_regularizer_output != "" || all->per_feature_regularizer_text != "");
+        reset_state(*all, *b, false);
     }
 
-  bool reg_vector = b->output_regularizer || all->per_feature_regularizer_input.length() > 0;
-  if (model_file.files.size() > 0)
+    bool reg_vector = b->output_regularizer || all->per_feature_regularizer_input.length() > 0;
+    if (model_file.files.size() > 0)
     {
-      char buff[512];
-      uint32_t text_len = sprintf(buff, ":%d\n", reg_vector);
-      bin_text_read_write_fixed(model_file,(char *)&reg_vector, sizeof (reg_vector),
-				"", read,
-				buff, text_len, text);
-      
-      if (reg_vector)
-	save_load_regularizer(*all, *b, model_file, read, text);
-      else
-	GD::save_load_regressor(*all, model_file, read, text);
+        char buff[512];
+        uint32_t text_len = sprintf(buff, ":%d\n", reg_vector);
+        bin_text_read_write_fixed(model_file,(char *)&reg_vector, sizeof (reg_vector),
+                "", read,
+                buff, text_len, text);
+
+        if (reg_vector)
+            save_load_regularizer(*all, *b, model_file, read, text);
+        else
+            GD::save_load_regressor(*all, model_file, read, text);
     }
 }
 
 void drive(vw* all, void* d)
 {
-  bfgs* b = (bfgs*)d;
+    bfgs* b = (bfgs*)d;
 
-  example* ec = NULL;
+    example* ec = NULL;
 
-  b->first_hessian_on = true;
-  b->backstep_on = true;
+    b->first_hessian_on = true;
+    b->backstep_on = true;
 
-  while ( true )
+    while ( true )
     {
-      if ((ec = VW::get_example(all->p)) != NULL)//semiblocking operation.
-	{
-	  learn(b, ec);
-	  return_simple_example(*all, ec);
-	}
-      else if (parser_done(all->p))
-	return;
-      else 
-	;//busywait when we have predicted on all examples but not yet trained on all.
+        if ((ec = VW::get_example(all->p)) != NULL)//semiblocking operation.
+        {
+            learn(b, ec);
+            return_simple_example(*all, ec);
+        }
+        else if (parser_done(all->p))
+            return;
+        else 
+            ;//busywait when we have predicted on all examples but not yet trained on all.
     }
 }
 
 void setup(vw& all, std::vector<std::string>&opts, po::variables_map& vm, po::variables_map& vm_file)
 {
-  bfgs* b = (bfgs*)calloc(1,sizeof(bfgs));
-  b->all = &all;
-  b->wolfe1_bound = 0.01;
-  b->first_hessian_on=true;
-  b->first_pass = true;
-  b->gradient_pass = true;
-  b->preconditioner_pass = true;
-  b->final_pass=all.numpasses;  
-  
-  sl_t sl = {b, save_load};
-  learner t(b,drive,learn,finish,sl);
-  all.l = t;
+    bfgs* b = (bfgs*)calloc(1,sizeof(bfgs));
+    b->all = &all;
+    b->wolfe1_bound = 0.01;
+    b->first_hessian_on=true;
+    b->first_pass = true;
+    b->gradient_pass = true;
+    b->preconditioner_pass = true;
+    b->final_pass=all.numpasses;  
 
-  all.bfgs = true;
-  all.reg.stride = 4;
-  
-  if (vm.count("hessian_on") || all.m==0) {
-    all.hessian_on = true;
-  }
-  if (!all.quiet) {
-    if (all.m>0)
-      cerr << "enabling BFGS based optimization ";
-    else
-      cerr << "enabling conjugate gradient optimization via BFGS ";
-    if (all.hessian_on)
-      cerr << "with curvature calculation" << endl;
-    else
-      cerr << "**without** curvature calculation" << endl;
-  }
-  if (all.numpasses < 2)
+    sl_t sl = {b, save_load};
+    learner t(b,drive,learn,finish,sl);
+    all.l = t;
+
+    all.bfgs = true;
+    all.reg.stride = 4;
+
+    if (vm.count("hessian_on") || all.m==0) {
+        all.hessian_on = true;
+    }
+    if (!all.quiet) {
+        if (all.m>0)
+            cerr << "enabling BFGS based optimization ";
+        else
+            cerr << "enabling conjugate gradient optimization via BFGS ";
+        if (all.hessian_on)
+            cerr << "with curvature calculation" << endl;
+        else
+            cerr << "**without** curvature calculation" << endl;
+    }
+    if (all.numpasses < 2)
     {
-      cout << "you must make at least 2 passes to use BFGS" << endl;
-      throw exception();
+        cout << "you must make at least 2 passes to use BFGS" << endl;
+        throw exception();
     }
 }
 }

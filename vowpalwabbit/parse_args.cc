@@ -15,12 +15,6 @@ license as described in the file LICENSE.
 #include "network.h"
 #include "global_data.h"
 #include "nn.h"
-#include "oaa.h"
-#include "ect.h"
-#include "csoaa.h"
-#include "wap.h"
-#include "cb.h"
-#include "searn.h"
 #include "bfgs.h"
 #include "lda_core.h"
 #include "noop.h"
@@ -28,7 +22,6 @@ license as described in the file LICENSE.
 #include "vw.h"
 #include "rand48.h"
 #include "parse_args.h"
-#include "binary.h"
 #include "autolink.h"
 
 using namespace std;
@@ -65,7 +58,6 @@ vw* parse_args(int argc, char *argv[])
     ("active_learning", "active learning mode")
     ("active_simulation", "active learning simulation mode")
     ("active_mellowness", po::value<float>(&(all->active_c0)), "active learning mellowness parameter c_0. Default 8")
-    ("binary", "report loss as binary classification on -1,1")
     ("autolink", po::value<size_t>(), "create link function with polynomial d")
     ("sgd", "use regular stochastic gradient descent update.")
     ("adaptive", "use adaptive, individual learning rates.")
@@ -81,11 +73,6 @@ vw* parse_args(int argc, char *argv[])
     ("compressed", "use gzip format whenever possible. If a cache file is being created, this option creates a compressed cache file. A mixture of raw-text & compressed inputs are supported with autodetection.")
     ("no_stdin", "do not default to reading from stdin")
     ("conjugate_gradient", "use conjugate gradient based optimization")
-    ("csoaa", po::value<size_t>(), "Use one-against-all multiclass learning with <k> costs")
-    ("wap", po::value<size_t>(), "Use weighted all-pairs multiclass learning with <k> costs")
-    ("csoaa_ldf", po::value<string>(), "Use one-against-all multiclass learning with label dependent features.  Specify singleline or multiline.")
-    ("wap_ldf", po::value<string>(), "Use weighted all-pairs multiclass learning with label dependent features.  Specify singleline or multiline.")
-    ("cb", po::value<size_t>(), "Use contextual bandit learning with <k> costs")
     ("l1", po::value<float>(&(all->l1_lambda)), "l_1 lambda")
     ("l2", po::value<float>(&(all->l2_lambda)), "l_2 lambda")
     ("data,d", po::value< string >(), "Example Set")
@@ -120,8 +107,6 @@ vw* parse_args(int argc, char *argv[])
     ("nn", po::value<size_t>(), "Use sigmoidal feedforward network with <k> hidden units")
     ("noconstant", "Don't add a constant feature")
     ("noop","do no learning")
-    ("oaa", po::value<size_t>(), "Use one-against-all multiclass learning with <k> labels")
-    ("ect", po::value<size_t>(), "Use error correcting tournament with <k> labels")
     ("output_feature_regularizer_binary", po::value< string >(&(all->per_feature_regularizer_output)), "Per feature regularization output file")
     ("output_feature_regularizer_text", po::value< string >(&(all->per_feature_regularizer_text)), "Per feature regularization output file, in text")
     ("port", po::value<size_t>(),"port to listen on")
@@ -146,8 +131,6 @@ vw* parse_args(int argc, char *argv[])
     ("save_per_pass", "Save the model after every pass over data")
     ("save_resume", "save extra state so learning can be resumed later with new data")
     ("sendto", po::value< vector<string> >(), "send examples to <host>")
-    ("searn", po::value<size_t>(), "use searn, argument=maximum action id")
-    ("searnimp", po::value<size_t>(), "use searn, argument=maximum action id or 0 for LDF")
     ("testonly,t", "Ignore label information and just test")
     ("loss_function", po::value<string>()->default_value("squared"), "Specify the loss function to be used, uses squared by default. Currently available ones are squared, classic, hinge, logistic and quantile.")
     ("quantile_tau", po::value<float>()->default_value(0.5), "Parameter \\tau associated with Quantile loss. Defaults to 0.5")
@@ -184,8 +167,6 @@ vw* parse_args(int argc, char *argv[])
 
   all->data_filename = "";
 
-  all->searn = false;
-  all->searnstr = NULL;
 
   all->sd->weighted_unlabeled_examples = all->sd->t;
   all->initial_t = (float)all->sd->t;
@@ -659,9 +640,6 @@ vw* parse_args(int argc, char *argv[])
           cerr << "using l2 regularization = " << all->l2_lambda << endl;
   }
 
-  bool got_mc = false;
-  bool got_cs = false;
-  bool got_cb = false;
 
   if(vm.count("nn") || vm_file.count("nn") ) 
       all->l = NN::setup(*all, to_pass_further, vm, vm_file);
@@ -669,96 +647,13 @@ vw* parse_args(int argc, char *argv[])
   if(vm.count("autolink") || vm_file.count("autolinnk") ) 
       all->l = ALINK::setup(*all, to_pass_further, vm, vm_file);
 
-  if (vm.count("binary") || vm_file.count("binary"))
-      all->l = BINARY::setup(*all, to_pass_further, vm, vm_file);
 
-  if(vm.count("oaa") || vm_file.count("oaa") ) {
-      if (got_mc) { cerr << "error: cannot specify multiple MC learners" << endl; throw exception(); }
 
-      all->l = OAA::setup(*all, to_pass_further, vm, vm_file);
-      got_mc = true;
-  }
 
-  if (vm.count("ect") || vm_file.count("ect") ) {
-      if (got_mc) { cerr << "error: cannot specify multiple MC learners" << endl; throw exception(); }
 
-      all->l = ECT::setup(*all, to_pass_further, vm, vm_file);
-      got_mc = true;
-  }
 
-  if(vm.count("csoaa") || vm_file.count("csoaa") ) {
-      if (got_cs) { cerr << "error: cannot specify multiple CS learners" << endl; throw exception(); }
 
-      all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);
-      got_cs = true;
-  }
 
-  if(vm.count("wap") || vm_file.count("wap") ) {
-      if (got_cs) { cerr << "error: cannot specify multiple CS learners" << endl; throw exception(); }
-
-      all->l = WAP::setup(*all, to_pass_further, vm, vm_file);
-      got_cs = true;
-  }
-
-  if(vm.count("csoaa_ldf") || vm_file.count("csoaa_ldf")) {
-      if (got_cs) { cerr << "error: cannot specify multiple CS learners" << endl; throw exception(); }
-
-      all->l = CSOAA_AND_WAP_LDF::setup(*all, to_pass_further, vm, vm_file);
-      got_cs = true;
-  }
-
-  if(vm.count("wap_ldf") || vm_file.count("wap_ldf") ) {
-      if (got_cs) { cerr << "error: cannot specify multiple CS learners" << endl; throw exception(); }
-
-      all->l = CSOAA_AND_WAP_LDF::setup(*all, to_pass_further, vm, vm_file);
-      got_cs = true;
-  }
-
-  if( vm.count("cb") || vm_file.count("cb") )
-  {
-      if(!got_cs) {
-          if( vm_file.count("cb") ) vm.insert(pair<string,po::variable_value>(string("csoaa"),vm_file["cb"]));
-          else vm.insert(pair<string,po::variable_value>(string("csoaa"),vm["cb"]));
-
-          all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);  // default to CSOAA unless wap is specified
-          got_cs = true;
-      }
-
-      all->l = CB::setup(*all, to_pass_further, vm, vm_file);
-      got_cb = true;
-  }
-
-  if (vm.count("searn") || vm_file.count("searn") ) { 
-      if (vm.count("searnimp") || vm_file.count("searnimp")) {
-          cerr << "fail: cannot have both --searn and --searnimp" << endl;
-          throw exception();
-      }
-      if (!got_cs && !got_cb) {
-          if( vm_file.count("searn") ) vm.insert(pair<string,po::variable_value>(string("csoaa"),vm_file["searn"]));
-          else vm.insert(pair<string,po::variable_value>(string("csoaa"),vm["searn"]));
-
-          all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);  // default to CSOAA unless others have been specified
-          got_cs = true;
-      }
-      all->l = Searn::setup(*all, to_pass_further, vm, vm_file);
-  }
-
-  if (vm.count("searnimp") || vm_file.count("searnimp") ) { 
-      if (!got_cs && !got_cb) {
-          if( vm_file.count("searnimp") ) vm.insert(pair<string,po::variable_value>(string("csoaa"),vm_file["searnimp"]));
-          else vm.insert(pair<string,po::variable_value>(string("csoaa"),vm["searnimp"]));
-
-          all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);  // default to CSOAA unless others have been specified
-          got_cs = true;
-      }
-      all->searnstr = (ImperativeSearn::searn*)calloc(1, sizeof(ImperativeSearn::searn));
-      all->l = ImperativeSearn::setup(*all, to_pass_further, vm, vm_file);
-  }
-
-  if (got_cb && got_mc) {
-      cerr << "error: doesn't make sense to do both MC learning and CB learning" << endl;
-      throw exception();
-  }
 
   if (to_pass_further.size() > 0) {
       bool is_actually_okay = false;
@@ -882,7 +777,6 @@ namespace VW {
         all.l.finish();
         if (all.reg.weight_vector != NULL)
             free(all.reg.weight_vector);
-        if (all.searnstr != NULL) free(all.searnstr);
         free_parser(all);
         finalize_source(all.p);
         free(all.p->lp);

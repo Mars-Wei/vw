@@ -697,7 +697,7 @@ void generateGrams(vw& all, example* &ex) {
 }
 
 example* get_unused_example(vw& all)
-{
+{//get a empty example buf
     while (true)
     {
         mutex_lock(&all.p->examples_lock);
@@ -1014,14 +1014,14 @@ DWORD WINAPI main_parse_loop(LPVOID in)
 #else
 void *main_parse_loop(void *in)
 #endif
-{//parse thread ,producer-consumer mode, this is producer 
+{//parse thread ,producer-consumer mode, this is the producer thread
     vw* all = (vw*) in;
     size_t example_number = 0;  // for variable-size batch learning algorithms
     while(!all->p->done)
     {
         example* ae = get_unused_example(*all);
         if (!all->do_reset_source && example_number != all->pass_length && all->max_examples > example_number
-                && parse_atomic_example(*all, ae) )  
+                && parse_atomic_example(*all, ae) ) //parse instance into a example 
             setup_example(*all, ae);
         else
         {
@@ -1053,7 +1053,7 @@ void *main_parse_loop(void *in)
 
 namespace VW{
     example* get_example(parser* p)
-    {
+    {//example comsumer call,  ---used ----- parsed-----
         mutex_lock(&p->examples_lock);
         if (p->parsed_examples != p->used_index) {
             size_t ring_index = p->used_index++ % p->ring_size;
