@@ -7,6 +7,7 @@ license as described in the file LICENSE.
 #define GLOBAL_DATA_H
 #include <vector>
 #include <map>
+#include <sstream>
 #include <stdint.h>
 #include <cstdio>
 #include "v_array.h"
@@ -118,6 +119,8 @@ struct regressor {
 struct vw {
   shared_data* sd;
 
+  std::stringstream * packet_ss;//for packet predict
+
   parser* p;
 #ifndef _WIN32
   pthread_t parse_thread;
@@ -146,7 +149,6 @@ struct vw {
   size_t num_children;
 
   bool save_per_pass;
-  float active_c0;
   float initial_weight;
 
   bool bfgs;
@@ -194,8 +196,6 @@ struct vw {
   bool audit;//should I print lots of debugging information?
   bool quiet;//Should I suppress updates?
   bool training;//Should I train if label data is available?
-  bool active;
-  bool active_simulation;
   bool adaptive;//Should I use adaptive individual learning rates?
   bool normalized_updates; //Should every feature be normalized
   bool invariant_updates; //Should we use importance aware/safe updates
@@ -254,12 +254,14 @@ struct vw {
   bool print_invert;
   std::map< std::string, size_t> name_index_map;
 
+    bool compress_predict;
+
   vw();
 };
 
 void print_result(int f, float res, float weight, v_array<char> tag);
+int print_tag(std::stringstream& ss, v_array<char> tag);
 void binary_print_result(int f, float res, float weight, v_array<char> tag);
-void active_print_result(int f, float res, float weight, v_array<char> tag);
 void noop_mm(shared_data*, float label);
 void print_lda_result(vw& all, int f, float* res, float weight, v_array<char> tag);
 void get_prediction(int sock, float& res, float& weight);

@@ -266,6 +266,8 @@ void reset_source(vw& all, size_t numbits)
             all.final_prediction_sink.erase();
             all.p->input->files.erase();
 
+            if(!all.quiet)
+                cerr<<"pid:"<<getpid()<<" re accept"<<endl;
             sockaddr_in client_address;
             socklen_t size = sizeof(client_address);
             int f = (int)accept(all.p->bound_sock,(sockaddr*)&client_address,&size);
@@ -280,7 +282,7 @@ void reset_source(vw& all, size_t numbits)
             all.final_prediction_sink.push_back((size_t) f);
             all.p->input->files.push_back(f);
 
-            if (isbinary(*(all.p->input))) {
+            if (0 && isbinary(*(all.p->input))) {//disable "isbinary" call
                 all.p->reader = read_cached_features;
                 all.print = binary_print_result;
             } else {
@@ -413,8 +415,8 @@ void parse_source_args(vw& all, po::variables_map& vm, bool quiet, size_t passes
     if(vm.count("hash")) 
         hash_function = vm["hash"].as<string>();
 
-    if (all.daemon || all.active)
-    {//daemon server
+    if (all.daemon )
+    {//set daemon server
         all.p->bound_sock = (int)socket(PF_INET, SOCK_STREAM, 0);
         if (all.p->bound_sock < 0) {
             cerr << "can't open socket!" << endl;
@@ -445,7 +447,7 @@ void parse_source_args(vw& all, po::variables_map& vm, bool quiet, size_t passes
         listen(all.p->bound_sock, source_count);
 
         // background process
-        if (!all.active && daemon(1,1))
+        if ( daemon(1,1))
         {
             cerr << "failure to background!" << endl;
             throw exception();
@@ -464,7 +466,7 @@ void parse_source_args(vw& all, po::variables_map& vm, bool quiet, size_t passes
             pid_file.close();
         }
 
-        if (all.daemon && !all.active)
+        if (all.daemon )
         {
 #ifdef _WIN32
             throw exception();
@@ -476,7 +478,7 @@ void parse_source_args(vw& all, po::variables_map& vm, bool quiet, size_t passes
 
             size_t float_count = all.reg.stride * all.length();
             weight* dest = shared_weights;
-            memcpy(dest, all.reg.weight_vector, float_count*sizeof(float));
+            memcpy(dest, all.reg.weight_vector, float_count*sizeof(float));//load into shared mmap
             free(all.reg.weight_vector);
             all.reg.weight_vector = dest;
 
@@ -512,6 +514,7 @@ void parse_source_args(vw& all, po::variables_map& vm, bool quiet, size_t passes
             while (true)
             {
                 // wait for child to change state; if finished, then respawn
+                cerr << "pid:"<<getpid()<<" wait child to change state..."<<endl;
                 int status;
                 pid_t pid = wait(&status);
                 if (got_sigterm)
@@ -525,6 +528,7 @@ void parse_source_args(vw& all, po::variables_map& vm, bool quiet, size_t passes
                 for (size_t i = 0; i < num_children; i++)
                     if (pid == children[i])
                     {
+                        cerr<<"child:"<<getpid()<<" changed state, refork()"<<endl;
                         if ((children[i]=fork()) == 0)
                             goto child;
                         break;
@@ -541,7 +545,7 @@ child:
         socklen_t size = sizeof(client_address);
         all.p->max_fd = 0;
         if (!all.quiet)
-            cerr << "calling accept" << endl;
+            cerr << "pid:"<<getpid()<<" calling accept" << endl;
         int f = (int)accept(all.p->bound_sock,(sockaddr*)&client_address,&size);
         if (f < 0)
         {
@@ -560,13 +564,8 @@ child:
             cerr << "reading data from port " << port << endl;
 
         all.p->max_fd++;
-        if(all.active)
-        {
-            all.p->reader = read_features;
-            all.p->hasher = getHasher(hash_function);
-        }
-        else {
-            if (isbinary(*(all.p->input))) {
+        if(1) {
+            if (0 &&isbinary(*(all.p->input))) {//disable isbinary
                 all.p->reader = read_cached_features;
                 all.print = binary_print_result;
             } else {
@@ -578,7 +577,7 @@ child:
         }
 
         all.p->resettable = all.p->write_cache || all.daemon;
-    }
+    }//end if( daemon )
 
     else  // was: else if (vm.count("data"))
     {
@@ -587,7 +586,7 @@ child:
             hash_function = vm["hash"].as<string>();
 
         if (all.p->input->files.size() > 0)
-        {
+        {//already parse cache_file args
             if (!quiet)
                 cerr << "ignoring text input in favor of cache input" << endl;
         }
@@ -718,6 +717,9 @@ bool parse_atomic_example(vw& all, example* ae, bool do_read = true)
     //read features
     if (do_read && all.p->reader(&all, ae) <= 0)
         return false;
+
+    if(ae->end_packet)
+        return true;
 
     if(all.p->sort_features && ae->sorted == false)
         unique_sort_features(all.audit, ae);
@@ -1015,16 +1017,18 @@ DWORD WINAPI main_parse_loop(LPVOID in)
 void *main_parse_loop(void *in)
 #endif
 {//parse thread ,producer-consumer mode, this is the producer thread
+    cerr << "main_parse_loop" <<endl;
     vw* all = (vw*) in;
     size_t example_number = 0;  // for variable-size batch learning algorithms
     while(!all->p->done)
     {
         example* ae = get_unused_example(*all);
+        //pass_length and max_examples default to (size_t) -1
         if (!all->do_reset_source && example_number != all->pass_length && all->max_examples > example_number
-                && parse_atomic_example(*all, ae) ) //parse instance into a example 
+                && parse_atomic_example(*all, ae) ) //read and parse  a instance into a example 
             setup_example(*all, ae);
         else
-        {
+        {//reset
             reset_source(*all, all->num_bits);
             all->do_reset_source = false;
             all->passes_complete++;
@@ -1091,6 +1095,7 @@ void initialize_examples(vw& all)
     {
         all.p->examples[i].ld = calloc(1,all.p->lp->label_size);
         all.p->examples[i].in_use = false;
+        all.p->examples[i].end_packet = false;
     }
 }
 
@@ -1100,7 +1105,17 @@ void adjust_used_index(vw& all)
 }
 
 void initialize_parser_datastructures(vw& all)
-{
+{//in child process if in daemon server mode, per child process data structure init
+    all.packet_ss = new stringstream();
+    if(all.packet_ss == NULL)
+    {
+        cerr<<"create packet_ss failed!"<<endl;
+        throw exception();
+    }
+    else{
+        cerr<<"create packet_ss ok!"<<endl;
+    }
+
     initialize_examples(all);
     initialize_mutex(&all.p->examples_lock);
     initialize_condition_variable(&all.p->example_available);

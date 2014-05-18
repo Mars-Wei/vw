@@ -34,7 +34,7 @@ struct shared_data {
   uint64_t example_number;
   uint64_t total_features;
 
-  double t;
+  double t;//total weight
   double weighted_examples;
   double weighted_unlabeled_examples;
   double old_weighted_examples;

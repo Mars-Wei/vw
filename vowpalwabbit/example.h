@@ -11,7 +11,7 @@ license as described in the file LICENSE.
 
 struct feature {
   float x;//feature value
-  uint32_t weight_index;
+  uint32_t weight_index;//hash index
   bool operator==(feature j){return weight_index == j.weight_index;}
 };
 
@@ -56,6 +56,8 @@ struct example // core example datatype.
   bool sorted;//Are the features sorted or not?
   bool in_use; //in use or not (for the parser)
   bool done; //set to false by setup_example()
+
+  bool end_packet;//compress_predict support  
 };
 
 example *alloc_example(size_t);

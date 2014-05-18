@@ -120,6 +120,8 @@ void print_result(int f, float res, float weight, v_array<char> tag)
     }
 }
 
+
+
 void print_raw_text(int f, string s, v_array<char> tag)
 {
   if (f < 0)
@@ -141,32 +143,6 @@ void print_raw_text(int f, string s, v_array<char> tag)
     }
 }
 
-void active_print_result(int f, float res, float weight, v_array<char> tag)
-{
-  if (f >= 0)
-    {
-      std::stringstream ss;
-      char temp[30];
-      sprintf(temp, "%f", res);
-      ss << temp;
-      if(!print_tag(ss, tag))
-          ss << ' ';
-      if(weight >= 0)
-	{
-	  sprintf(temp, " %f", weight);
-          ss << temp;
-	}
-      ss << '\n';
-      ssize_t len = ss.str().size();
-#ifdef _WIN32
-	  ssize_t t = _write(f, ss.str().c_str(), (unsigned int)len);
-#else
-	  ssize_t t = write(f, ss.str().c_str(), (unsigned int)len);
-#endif
-      if (t != len)
-	cerr << "write error" << endl;
-    }
-}
 
 void print_lda_result(vw& all, int f, float* res, float weight, v_array<char> tag)
 {
@@ -233,6 +209,8 @@ void compile_gram(vector<string> grams, uint32_t* dest, char* descriptor, bool q
 
 vw::vw()
 {
+
+  packet_ss = NULL;
   sd = (shared_data *) calloc(1, sizeof(shared_data));
   sd->dump_interval = (float)exp(1.);
   sd->contraction = 1.;
@@ -319,9 +297,6 @@ vw::vw()
 
   add_constant = true;
   audit = false;
-  active = false;
-  active_simulation = false;
-  active_c0 = 8.;
   reg.weight_vector = NULL;
   pass_length = (size_t)-1;
   passes_complete = 0;
@@ -337,5 +312,7 @@ vw::vw()
 
   hash_inv = false;
   print_invert = false;
+
+    compress_predict = false;
 
 }

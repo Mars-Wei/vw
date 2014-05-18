@@ -25,8 +25,10 @@ vw_DEPS = $(patsubst %.cc,%.d,$(vw_SOURCES))
 
 -include $(vw_DEPS)
 
+#FLAGS=-pg -g
+
 %.o:	 %.cc  %.h
-	$(COMPILER) $(FLAGS) -c $< -o $@
+	$(COMPILER) $(FLAGS) -c $< -o $@ 
 
 %.o:	 %.cc
 	$(COMPILER) $(FLAGS) -c $< -o $@

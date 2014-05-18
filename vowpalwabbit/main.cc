@@ -1,7 +1,7 @@
 /*
-Copyright (c) by respective owners including Yahoo!, Microsoft, and
-individual contributors. All rights reserved.  Released under a BSD
-license as described in the file LICENSE.
+   Copyright (c) by respective owners including Yahoo!, Microsoft, and
+   individual contributors. All rights reserved.  Released under a BSD
+   license as described in the file LICENSE.
  */
 
 #include <math.h>
@@ -27,72 +27,79 @@ using namespace std;
 int main(int argc, char *argv[])
 {
     //parse cmd args and init vw
-  vw *all = parse_args(argc, argv);
-  struct timeb t_start, t_end;
-  ftime(&t_start);
-  
-  if (!all->quiet && !all->bfgs )
+    vw *all = parse_args(argc, argv);
+    struct timeb t_start, t_end;
+    ftime(&t_start);
+
+    if (!all->quiet && !all->bfgs )
     {
-      const char * header_fmt = "%-10s %-10s %10s %11s %8s %8s %8s\n";
-      fprintf(stderr, header_fmt,
-	      "average", "since", "example", "example",
-	      "current", "current", "current");
-      fprintf(stderr, header_fmt,
-	      "loss", "last", "counter", "weight", "label", "predict", "features");
-      cerr.precision(5);
+        const char * header_fmt = "%-10s %-10s %10s %11s %8s %8s %8s\n";
+        fprintf(stderr, header_fmt,
+                "average", "since", "example", "example",
+                "current", "current", "current");
+        fprintf(stderr, header_fmt,
+                "loss", "last", "counter", "weight", "label", "predict", "features");
+        cerr.precision(5);
     }
 
     //create parser structures ; parse and load examples
-  VW::start_parser(*all);
+    if(!all->quiet)
+        cerr<<"start parser run in process:" << getpid() <<endl;
+    VW::start_parser(*all);
 
-  all->l.drive(all);
 
-  VW::end_parser(*all);
-  
-  ftime(&t_end);
-  double net_time = (int) (1000.0 * (t_end.time - t_start.time) + (t_end.millitm - t_start.millitm)); 
-  if(!all->quiet && all->span_server != "")
-    cerr<<"Net time taken by process = "<<net_time/(double)(1000)<<" seconds\n";
+    if(!all->quiet)
+        cerr<<"start driver run in process:" << getpid() <<endl;
+    all->l.drive(all);
 
-  if(all->span_server != "") {
-    float loss = (float)all->sd->sum_loss;
-    all->sd->sum_loss = (double)accumulate_scalar(*all, all->span_server, loss);
-    float weighted_examples = (float)all->sd->weighted_examples;
-    all->sd->weighted_examples = (double)accumulate_scalar(*all, all->span_server, weighted_examples);
-    float weighted_labels = (float)all->sd->weighted_labels;
-    all->sd->weighted_labels = (double)accumulate_scalar(*all, all->span_server, weighted_labels);
-    float weighted_unlabeled_examples = (float)all->sd->weighted_unlabeled_examples;
-    all->sd->weighted_unlabeled_examples = (double)accumulate_scalar(*all, all->span_server, weighted_unlabeled_examples);
-    float example_number = (float)all->sd->example_number;
-    all->sd->example_number = (uint64_t)accumulate_scalar(*all, all->span_server, example_number);
-    float total_features = (float)all->sd->total_features;
-    all->sd->total_features = (uint64_t)accumulate_scalar(*all, all->span_server, total_features);
-  }
+    if(!all->quiet)
+        cerr<<"start end_parser() run in process:" << getpid() <<endl;
+    VW::end_parser(*all);
+    if(!all->quiet)
+        cerr<<"end_parser() finished in process:" << getpid() <<endl;
 
-  float weighted_labeled_examples = (float)(all->sd->weighted_examples - all->sd->weighted_unlabeled_examples);
-  float best_constant = (float)((all->sd->weighted_labels - all->initial_t) / weighted_labeled_examples);
-  float constant_loss = (best_constant*(1.0f - best_constant)*(1.0f - best_constant)
-			 + (1.0f - best_constant)*best_constant*best_constant);
-  
-  if (!all->quiet)
-    {
-      cerr.precision(6);
-      cerr << endl << "finished run";
-      cerr << endl << "number of examples = " << all->sd->example_number;
-      cerr << endl << "weighted example sum = " << all->sd->weighted_examples;
-      cerr << endl << "weighted label sum = " << all->sd->weighted_labels;
-      cerr << endl << "average loss = " << all->sd->sum_loss / all->sd->weighted_examples;
-      cerr << endl << "best constant = " << best_constant;
-      if (all->sd->min_label == 0. && all->sd->max_label == 1. && best_constant < 1. && best_constant > 0.)
-	cerr << endl << "best constant's loss = " << constant_loss;
-      cerr << endl << "total feature number = " << all->sd->total_features;
-      if (all->active_simulation)
-	cerr << endl << "total queries = " << all->sd->queries << endl;
-      cerr << endl;
+    ftime(&t_end);
+    double net_time = (int) (1000.0 * (t_end.time - t_start.time) + (t_end.millitm - t_start.millitm)); 
+    if(!all->quiet && all->span_server != "")
+        cerr<<"Net time taken by process = "<<net_time/(double)(1000)<<" seconds\n";
+
+    if(all->span_server != "") {
+        float loss = (float)all->sd->sum_loss;
+        all->sd->sum_loss = (double)accumulate_scalar(*all, all->span_server, loss);
+        float weighted_examples = (float)all->sd->weighted_examples;
+        all->sd->weighted_examples = (double)accumulate_scalar(*all, all->span_server, weighted_examples);
+        float weighted_labels = (float)all->sd->weighted_labels;
+        all->sd->weighted_labels = (double)accumulate_scalar(*all, all->span_server, weighted_labels);
+        float weighted_unlabeled_examples = (float)all->sd->weighted_unlabeled_examples;
+        all->sd->weighted_unlabeled_examples = (double)accumulate_scalar(*all, all->span_server, weighted_unlabeled_examples);
+        float example_number = (float)all->sd->example_number;
+        all->sd->example_number = (uint64_t)accumulate_scalar(*all, all->span_server, example_number);
+        float total_features = (float)all->sd->total_features;
+        all->sd->total_features = (uint64_t)accumulate_scalar(*all, all->span_server, total_features);
     }
-  
-  VW::finish(*all);
-  
-  return 0;
+
+    float weighted_labeled_examples = (float)(all->sd->weighted_examples - all->sd->weighted_unlabeled_examples);
+    float best_constant = (float)((all->sd->weighted_labels - all->initial_t) / weighted_labeled_examples);
+    float constant_loss = (best_constant*(1.0f - best_constant)*(1.0f - best_constant)
+            + (1.0f - best_constant)*best_constant*best_constant);
+
+    if (!all->quiet)
+    {
+        cerr.precision(6);
+        cerr << endl << "finished run";
+        cerr << endl << "number of examples = " << all->sd->example_number;
+        cerr << endl << "weighted example sum = " << all->sd->weighted_examples;
+        cerr << endl << "weighted label sum = " << all->sd->weighted_labels;
+        cerr << endl << "average loss = " << all->sd->sum_loss / all->sd->weighted_examples;
+        cerr << endl << "best constant = " << best_constant;
+        if (all->sd->min_label == 0. && all->sd->max_label == 1. && best_constant < 1. && best_constant > 0.)
+            cerr << endl << "best constant's loss = " << constant_loss;
+        cerr << endl << "total feature number = " << all->sd->total_features;
+        cerr << endl;
+    }
+
+    VW::finish(*all);
+
+    return 0;
 }
 

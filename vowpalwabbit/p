@@ -1,0 +1,404 @@
+./autolink.cc:        if ((ec = VW::get_example(all->p)) != NULL)//semiblocking operation.
+./autolink.cc:        else if (parser_done(all->p))
+./bfgs.cc:  uint32_t length = 1 << all->num_bits;
+./bfgs.cc:      if (all->per_feature_regularizer_input != "")
+./bfgs.cc:	      cerr << all->program_name << ": Failed to allocate regularizers array: try decreasing -b <bits>" << endl;
+./bfgs.cc:      int m = all->m;
+./bfgs.cc:      b->mem = (float*) malloc(sizeof(float)*all->length()*(b->mem_stride));
+./bfgs.cc:      if (!all->quiet) 
+./bfgs.cc:	  fprintf(stderr, "m = %d\nAllocated %luM for weights and mem\n", m, (long unsigned int)all->length()*(sizeof(float)*(b->mem_stride)+sizeof(weight)*all->reg.stride) >> 20);
+./bfgs.cc:      if (!all->quiet)
+./bfgs.cc:	all->l2_lambda = 1; // To make sure we are adding the regularization
+./bfgs.cc:      b->output_regularizer =  (all->per_feature_regularizer_output != "" || all->per_feature_regularizer_text != "");
+./bfgs.cc:  bool reg_vector = b->output_regularizer || all->per_feature_regularizer_input.length() > 0;
+./bfgs.cc:      if ((ec = VW::get_example(all->p)) != NULL)//semiblocking operation.
+./bfgs.cc:      else if (parser_done(all->p))
+./binary.cc:        if ((ec = VW::get_example(all->p)) != NULL)//semiblocking operation.
+./binary.cc:        else if (parser_done(all->p))
+./cache.cc:  ae->sorted = all->p->sorted_cache;
+./cache.cc:  io_buf* input = all->p->input;
+./cache.cc:  size_t total = all->p->lp->read_cached_label(all->sd, ae->ld, *input);
+./cache.cc:  all->p->input->set(c);
+./cache.cc:      all->p->input->set(c);
+./cache.cc:      all->p->input->set(c);
+./cb.cc:      if ((ec = VW::get_example(all->p)) != NULL)//semiblocking operation.
+./cb.cc:      else if (parser_done(all->p))
+./csoaa.cc:	if (cl->x == FLT_MAX || !all->training)
+./csoaa.cc:	  update_example_indicies(all->audit, ec, desired_increment - current_increment);
+./csoaa.cc:      update_example_indicies(all->audit, ec, -current_increment);
+./csoaa.cc:        if ((ec = VW::get_example(all->p)) != NULL)//semiblocking operation.
+./csoaa.cc:        else if (parser_done(all->p))
+./ect.cc:    if (mc->label != (uint32_t)-1 && all->training)
+./ect.cc:        if ((ec = VW::get_example(all->p)) != NULL)//semiblocking operation.
+./ect.cc:        else if (parser_done(all->p))
+./example.cc:  if (ec->tag.size() >= 4 && !strncmp((const char*) ec->tag.begin, "save", 4) && all->current_command != ec->example_counter)
+./example.cc:      string final_regressor_name = all->final_regressor_name;
+./example.cc:      if (!all->quiet)
+./example.cc:      all->current_command = ec->example_counter;
+./gd.cc:      if(all->span_server != "") {
+./gd.cc:	if(all->adaptive)
+./gd.cc:	  accumulate_weighted_avg(*all, all->span_server, all->reg);
+./gd.cc:	  accumulate_avg(*all, all->span_server, all->reg, 0);	      
+./gd.cc:      all->eta *= all->eta_decay_rate;
+./gd.cc:      if (all->save_per_pass)
+./gd.cc:	save_predictor(*all, all->final_regressor_name, all->current_pass);   
+./gd.cc:      all->current_pass++;
+./gd.cc:      if (all->holdout_set_off || !ec->test_only)
+./gd.cc:          if(all->power_t == 0.5) { 
+./gd.cc:            if (all->adaptive) {
+./gd.cc:              if (all->normalized_updates){ 
+./gd.cc:              if (all->normalized_updates){ 
+./gd.cc:	  if (all->sd->contraction < 1e-10)  // updating weights now to avoid numerical instability
+./gd.cc:      if(all->adaptive && all->initial_t > 0)
+./gd.cc:	  uint32_t length = 1 << all->num_bits;
+./gd.cc:	  uint32_t stride = all->reg.stride;
+./gd.cc:	      all->reg.weight_vector[j] = all->initial_t;   //for adaptive update, we interpret initial_t as previously seeing initial_t fake datapoints, all with squared gradient=1
+./gd.cc:      bool resume = all->save_resume;
+./gd.cc:      if ((ec = VW::get_example(all->p)) != NULL)//semiblocking operation.
+./gd.cc:      else if (parser_done(all->p))
+./gd_mf.cc:  uint32_t length = 1 << all->num_bits;
+./gd_mf.cc:  uint32_t stride = all->reg.stride;
+./gd_mf.cc:      if(all->random_weights)
+./gd_mf.cc:	for (size_t j = 0; j < all->reg.stride*length; j++)
+./gd_mf.cc:	  all->reg.weight_vector[j] = (float) (0.1 * frand48()); 
+./gd_mf.cc:	  size_t K = all->rank*2+1;
+./gd_mf.cc:		weight* v = &(all->reg.weight_vector[ndx]);
+./gd_mf.cc:      all->eta *= all->eta_decay_rate;
+./gd_mf.cc:      if (all->save_per_pass)
+./gd_mf.cc:        save_predictor(*all, all->final_regressor_name, all->current_pass);
+./gd_mf.cc:      all->current_pass++;
+./gd_mf.cc:	if (all->training && ((label_data*)(ec->ld))->label != FLT_MAX)
+./gd_mf.cc:      if ((ec = VW::get_example(all->p)) != NULL)//blocking operation.
+./gd_mf.cc:      else if (parser_done(all->p))
+./lda_core.cc:  uint32_t length = 1 << all->num_bits;
+./lda_core.cc:  uint32_t stride = all->reg.stride;
+./lda_core.cc:	  for (size_t k = 0; k < all->lda; k++) {
+./lda_core.cc:	    if (all->random_weights) {
+./lda_core.cc:	      all->reg.weight_vector[j+k] = (float)(-log(frand48()) + 1.0f);
+./lda_core.cc:	      all->reg.weight_vector[j+k] *= (float)(all->lda_D / all->lda / all->length() * 200);
+./lda_core.cc:	  all->reg.weight_vector[j+all->lda] = all->initial_t;
+./lda_core.cc:	  size_t K = all->lda;
+./lda_core.cc:		weight* v = &(all->reg.weight_vector[ndx]);
+./lda_core.cc:		text_len = sprintf(buff, "%f ", *v + all->lda_rho);
+./lda_core.cc:  regressor reg = all->reg;
+./lda_core.cc:  v.resize(all->lda*all->minibatch);
+./lda_core.cc:  for (size_t k = 0; k < all->lda; k++)
+./lda_core.cc:  size_t stride = all->reg.stride;
+./lda_core.cc:  for (size_t i =0; i <= all->reg.weight_mask;i+=stride)
+./lda_core.cc:    for (size_t k = 0; k < all->lda; k++)
+./lda_core.cc:  double example_t = all->initial_t;
+./lda_core.cc:      for (size_t k = 0; k < all->lda; k++)
+./lda_core.cc:      size_t batch_size = all->minibatch;
+./lda_core.cc:	  if ((ec = VW::get_example(all->p)) != NULL)//semiblocking operation.
+./lda_core.cc:	  else if (parser_done(all->p))
+./lda_core.cc:      eta = all->eta * powf((float)example_t, - all->power_t);
+./lda_core.cc:      eta *= all->lda_D / batch_size;
+./lda_core.cc:      float additional = (float)(all->length()) * all->lda_rho;
+./lda_core.cc:      for (size_t i = 0; i<all->lda; i++) {
+./lda_core.cc:	  float* weights_for_w = &(weights[s->f.weight_index & all->reg.weight_mask]);
+./lda_core.cc:          float decay = fmin(1.0, exp(decay_levels.end[-2] - decay_levels.end[(int)(-1-example_t+weights_for_w[all->lda])]));
+./lda_core.cc:	  float* u_for_w = weights_for_w + all->lda+1;
+./lda_core.cc:	  weights_for_w[all->lda] = (float)example_t;
+./lda_core.cc:	  for (size_t k = 0; k < all->lda; k++)
+./lda_core.cc:	      u_for_w[k] = weights_for_w[k] + all->lda_rho;
+./lda_core.cc:          float score = lda_loop(*all, *Elogtheta, &v[d*all->lda], weights, examples[d],all->power_t);
+./lda_core.cc:          if (all->audit)
+./lda_core.cc:            all->sd->sum_loss -= score;
+./lda_core.cc:            all->sd->sum_loss_since_last_dump -= score;
+./lda_core.cc:	  float* word_weights = &(weights[s->f.weight_index & all->reg.weight_mask]);
+./lda_core.cc:	  for (size_t k = 0; k < all->lda; k++) {
+./lda_core.cc:	    float* v_s = &v[s->document*all->lda];
+./lda_core.cc:	    float* u_for_w = &weights[(s->f.weight_index & all->reg.weight_mask) + all->lda + 1];
+./lda_core.cc:	    for (size_t k = 0; k < all->lda; k++) {
+./lda_core.cc:      for (size_t k = 0; k < all->lda; k++) {
+./lda_core.cc:      if (parser_done(all->p))
+./lda_core.cc:	  for (size_t i = 0; i < all->length(); i++) {
+./lda_core.cc:	    weight* weights_for_w = & (weights[i*all->reg.stride]);
+./lda_core.cc:            float decay = fmin(1.0, exp(decay_levels.last() - decay_levels.end[(int)(-1-example_t+weights_for_w[all->lda])]));
+./lda_core.cc:	    for (size_t k = 0; k < all->lda; k++) {
+./loss_functions.cc:    all->sd->binary_label = true;
+./loss_functions.cc:    if (all->set_minmax != noop_mm)
+./loss_functions.cc:	all->sd->min_label = -50;
+./loss_functions.cc:	all->sd->max_label = 50;
+./loss_functions.cc:	all->sd->binary_label = true;
+./main.cc:  if (!all->quiet && !all->bfgs && !all->searn)
+./main.cc:  all->l.drive(all);
+./main.cc:  if(!all->quiet && all->span_server != "")
+./main.cc:  if(all->span_server != "") {
+./main.cc:    float loss = (float)all->sd->sum_loss;
+./main.cc:    all->sd->sum_loss = (double)accumulate_scalar(*all, all->span_server, loss);
+./main.cc:    float weighted_examples = (float)all->sd->weighted_examples;
+./main.cc:    all->sd->weighted_examples = (double)accumulate_scalar(*all, all->span_server, weighted_examples);
+./main.cc:    float weighted_labels = (float)all->sd->weighted_labels;
+./main.cc:    all->sd->weighted_labels = (double)accumulate_scalar(*all, all->span_server, weighted_labels);
+./main.cc:    float weighted_unlabeled_examples = (float)all->sd->weighted_unlabeled_examples;
+./main.cc:    all->sd->weighted_unlabeled_examples = (double)accumulate_scalar(*all, all->span_server, weighted_unlabeled_examples);
+./main.cc:    float example_number = (float)all->sd->example_number;
+./main.cc:    all->sd->example_number = (uint64_t)accumulate_scalar(*all, all->span_server, example_number);
+./main.cc:    float total_features = (float)all->sd->total_features;
+./main.cc:    all->sd->total_features = (uint64_t)accumulate_scalar(*all, all->span_server, total_features);
+./main.cc:  float weighted_labeled_examples = (float)(all->sd->weighted_examples - all->sd->weighted_unlabeled_examples);
+./main.cc:  float best_constant = (float)((all->sd->weighted_labels - all->initial_t) / weighted_labeled_examples);
+./main.cc:  if (!all->quiet)
+./main.cc:      cerr << endl << "number of examples = " << all->sd->example_number;
+./main.cc:      cerr << endl << "weighted example sum = " << all->sd->weighted_examples;
+./main.cc:      cerr << endl << "weighted label sum = " << all->sd->weighted_labels;
+./main.cc:      cerr << endl << "average loss = " << all->sd->sum_loss / all->sd->weighted_examples;
+./main.cc:      if (all->sd->min_label == 0. && all->sd->max_label == 1. && best_constant < 1. && best_constant > 0.)
+./main.cc:      cerr << endl << "total feature number = " << all->sd->total_features;
+./main.cc:      if (all->active_simulation)
+./main.cc:	cerr << endl << "total queries = " << all->sd->queries << endl;
+./nn.cc:        if ((ec = VW::get_example(all->p)) != NULL)//semiblocking operation.
+./nn.cc:            learn_with_output(*all, *n, ec, all->raw_prediction > 0);
+./nn.cc:            int save_raw_prediction = all->raw_prediction;
+./nn.cc:            all->raw_prediction = -1;
+./nn.cc:            all->raw_prediction = save_raw_prediction;
+./nn.cc:        else if (parser_done(all->p))
+./noop.cc:    while ( !parser_done(all->p)){
+./noop.cc:      ec = VW::get_example(all->p);
+./oaa.cc:          update_example_indicies(all->audit, ec, d->increment);
+./oaa.cc:    update_example_indicies(all->audit, ec, -d->total_increment);
+./oaa.cc:      all->print_text(all->raw_prediction, outputStringStream.str(), ec->tag);
+./oaa.cc:        if ((ec = VW::get_example(all->p)) != NULL)//semiblocking operation.
+./oaa.cc:            learn_with_output((oaa*)d, ec, all->raw_prediction > 0);
+./oaa.cc:        else if (parser_done(all->p))
+./parse_args.cc:  all->program_name = argv[0];
+./parse_args.cc:    ("active_mellowness", po::value<float>(&(all->active_c0)), "active learning mellowness parameter c_0. Default 8")
+./parse_args.cc:    ("wap", po::value<size_t>(), "Use weighted all-pairs multiclass learning with <k> costs")
+./parse_args.cc:    ("wap_ldf", po::value<string>(), "Use weighted all-pairs multiclass learning with label dependent features.  Specify singleline or multiline.")
+./parse_args.cc:    ("l1", po::value<float>(&(all->l1_lambda)), "l_1 lambda")
+./parse_args.cc:    ("l2", po::value<float>(&(all->l2_lambda)), "l_2 lambda")
+./parse_args.cc:    ("num_children", po::value<size_t>(&(all->num_children)), "number of children for persistent daemon mode")
+./parse_args.cc:    ("decay_learning_rate",    po::value<float>(&(all->eta_decay_rate)),
+./parse_args.cc:    ("input_feature_regularizer", po::value< string >(&(all->per_feature_regularizer_input)), "Per feature regularization input file")
+./parse_args.cc:    ("holdout_period", po::value<uint32_t>(&(all->holdout_period)), "holdout period for test only, default 10")
+./parse_args.cc:    ("initial_weight", po::value<float>(&(all->initial_weight)), "Set all weights to an initial value of 1.")
+./parse_args.cc:    ("initial_pass_length", po::value<size_t>(&(all->pass_length)), "initial number of examples per pass")
+./parse_args.cc:    ("initial_t", po::value<double>(&((all->sd->t))), "initial t value")
+./parse_args.cc:    ("lda", po::value<size_t>(&(all->lda)), "Run lda with <int> topics")
+./parse_args.cc:    ("span_server", po::value<string>(&(all->span_server)), "Location of server for setting up spanning tree")
+./parse_args.cc:    ("min_prediction", po::value<float>(&(all->sd->min_label)), "Smallest prediction to output")
+./parse_args.cc:    ("max_prediction", po::value<float>(&(all->sd->max_label)), "Largest prediction to output")
+./parse_args.cc:    ("mem", po::value<int>(&(all->m)), "memory in bfgs")
+./parse_args.cc:    ("output_feature_regularizer_binary", po::value< string >(&(all->per_feature_regularizer_output)), "Per feature regularization output file")
+./parse_args.cc:    ("output_feature_regularizer_text", po::value< string >(&(all->per_feature_regularizer_text)), "Per feature regularization output file, in text")
+./parse_args.cc:    ("power_t", po::value<float>(&(all->power_t)), "t power value")
+./parse_args.cc:    ("learning_rate,l", po::value<float>(&(all->eta)), "Set Learning Rate")
+./parse_args.cc:    ("passes", po::value<size_t>(&(all->numpasses)),"Number of Training Passes")
+./parse_args.cc:    ("termination", po::value<float>(&(all->rel_threshold)),"Termination threshold")
+./parse_args.cc:    ("rank", po::value<uint32_t>(&(all->rank)), "rank for matrix factorization.")
+./parse_args.cc:    ("random_weights", po::value<bool>(&(all->random_weights)), "make initial weights random")
+./parse_args.cc:    ("ring_size", po::value<size_t>(&(all->p->ring_size)), "size of example ring")
+./parse_args.cc:	("examples", po::value<size_t>(&(all->max_examples)), "number of examples to parse")
+./parse_args.cc:    ("unique_id", po::value<size_t>(&(all->unique_id)),"unique id used for cluster parallel jobs")
+./parse_args.cc:    ("total", po::value<size_t>(&(all->total)),"total number of nodes used in cluster parallel job")    
+./parse_args.cc:    ("node", po::value<size_t>(&(all->node)),"node number in cluster parallel job")    
+./parse_args.cc:  all->l = GD::setup(*all, vm);
+./parse_args.cc:  all->scorer = all->l;
+./parse_args.cc:  all->data_filename = "";
+./parse_args.cc:  all->searn = false;
+./parse_args.cc:  all->searnstr = NULL;
+./parse_args.cc:  all->sd->weighted_unlabeled_examples = all->sd->t;
+./parse_args.cc:  all->initial_t = (float)all->sd->t;
+./parse_args.cc:  if(all->initial_t > 0)
+./parse_args.cc:    all->normalized_sum_norm_x = all->initial_t;//for the normalized update: if initial_t is bigger than 1 we interpret this as if we had seen (all->initial_t) previous fake datapoints all with norm 1
+./parse_args.cc:    all->quiet = true;
+./parse_args.cc:    all->quiet = false;
+./parse_args.cc:      all->active_simulation = true;
+./parse_args.cc:  if (vm.count("active_learning") && !all->active_simulation)
+./parse_args.cc:    all->active = true;
+./parse_args.cc:    all->stdin_off = true;
+./parse_args.cc:  if (vm.count("testonly") || all->eta == 0.)
+./parse_args.cc:      if (!all->quiet)
+./parse_args.cc:      all->training = false;
+./parse_args.cc:      if (all->lda > 0)
+./parse_args.cc:        all->eta = 0;
+./parse_args.cc:    all->training = true;
+./parse_args.cc:  all->reg.stride = 4; //use stride of 4 for default invariant normalized adaptive updates
+./parse_args.cc:  if( all->rank > 0 || !all->training || ( ( vm.count("sgd") || vm.count("adaptive") || vm.count("invariant") || vm.count("normalized") ) && !vm.count("exact_adaptive_norm")) )
+./parse_args.cc:    all->adaptive = all->training && (vm.count("adaptive") && all->rank == 0);
+./parse_args.cc:    all->invariant_updates = all->training && vm.count("invariant");
+./parse_args.cc:    all->normalized_updates = all->training && (vm.count("normalized") && all->rank == 0);
+./parse_args.cc:    all->reg.stride = 1;
+./parse_args.cc:    if( all->adaptive ) all->reg.stride *= 2;
+./parse_args.cc:    else all->normalized_idx = 1; //store per feature norm at 1 index offset from weight value instead of 2
+./parse_args.cc:    if( all->normalized_updates ) all->reg.stride *= 2;
+./parse_args.cc:    if(!vm.count("learning_rate") && !vm.count("l") && !(all->adaptive && all->normalized_updates))
+./parse_args.cc:      all->eta = 10; //default learning rate to 10 for non default update rule
+./parse_args.cc:    if(!all->adaptive && !all->normalized_updates && !vm.count("initial_t")) {
+./parse_args.cc:      all->sd->t = 1.f;
+./parse_args.cc:      all->sd->weighted_unlabeled_examples = 1.f;
+./parse_args.cc:      all->initial_t = 1.f;
+./parse_args.cc:      if(all->reg.stride == 1){
+./parse_args.cc:        all->reg.stride *= 2;//if --sgd, stride->2 and use the second position as mask
+./parse_args.cc:        all->feature_mask_idx = 1;
+./parse_args.cc:      else if(all->reg.stride == 2){
+./parse_args.cc:        all->reg.stride *= 2;//if either normalized or adaptive, stride->4, mask_idx is still 3      
+./parse_args.cc:    all->ngram_strings = vm["ngram"].as< vector<string> >();
+./parse_args.cc:    compile_gram(all->ngram_strings, all->ngram, (char*)"grams", all->quiet);
+./parse_args.cc:      all->skip_strings = vm["skips"].as<vector<string> >();
+./parse_args.cc:      compile_gram(all->skip_strings, all->skips, (char*)"skips", all->quiet);
+./parse_args.cc:      all->default_bits = false;
+./parse_args.cc:      all->num_bits = (uint32_t)vm["bit_precision"].as< size_t>();
+./parse_args.cc:      if (all->num_bits > min(32, sizeof(size_t)*8 - 3))
+./parse_args.cc:  if (vm.count("daemon") || vm.count("pid_file") || (vm.count("port") && !all->active) ) {
+./parse_args.cc:    all->daemon = true;
+./parse_args.cc:    all->numpasses = (size_t) 1e5;
+./parse_args.cc:      set_compressed(all->p);
+./parse_args.cc:  if(all->numpasses > 1)
+./parse_args.cc:      all->holdout_set_off = false;
+./parse_args.cc:      all->holdout_set_off = true;
+./parse_args.cc:    all->data_filename = vm["data"].as<string>();
+./parse_args.cc:    if (ends_with(all->data_filename, ".gz"))
+./parse_args.cc:      set_compressed(all->p);
+./parse_args.cc:    all->data_filename = "";
+./parse_args.cc:    all->p->sort_features = true;
+./parse_args.cc:      all->pairs = vm["quadratic"].as< vector<string> >();
+./parse_args.cc:      if(!all->quiet)
+./parse_args.cc:      for (vector<string>::iterator i = all->pairs.begin(); i != all->pairs.end();i++){
+./parse_args.cc:        if(!all->quiet){
+./parse_args.cc:      newpairs.swap(all->pairs);
+./parse_args.cc:      if(!all->quiet)
+./parse_args.cc:      all->triples = vm["cubic"].as< vector<string> >();
+./parse_args.cc:      if (!all->quiet)
+./parse_args.cc:	  for (vector<string>::iterator i = all->triples.begin(); i != all->triples.end();i++) {
+./parse_args.cc:  all->options_from_file_argv = VW::get_argv_from_string(all->options_from_file,all->options_from_file_argc);
+./parse_args.cc:  po::parsed_options parsed_file = po::command_line_parser(all->options_from_file_argc, all->options_from_file_argv).
+./parse_args.cc:    all->ignore[i] = false;
+./parse_args.cc:  all->ignore_some = false;
+./parse_args.cc:      all->ignore_some = true;
+./parse_args.cc:	  all->ignore[*i] = true;
+./parse_args.cc:      if (!all->quiet)
+./parse_args.cc:        all->ignore[i] = true;
+./parse_args.cc:      all->ignore_some = true;
+./parse_args.cc:	  all->ignore[*i] = false;
+./parse_args.cc:      if (!all->quiet)
+./parse_args.cc:  if (all->rank > 0) {
+./parse_args.cc:    float temp = ceilf(logf((float)(all->rank*2+1)) / logf (2.f));
+./parse_args.cc:    all->reg.stride = 1 << (int) temp;
+./parse_args.cc:    all->random_weights = true;
+./parse_args.cc:      all->sd->t = 1.f;
+./parse_args.cc:      all->sd->weighted_unlabeled_examples = 1.f;
+./parse_args.cc:      all->initial_t = 1.f;
+./parse_args.cc:    all->add_constant = false;
+./parse_args.cc:  //  all->nonormalize = true;
+./parse_args.cc:    all->l = LDA::setup(*all, to_pass_further, vm);
+./parse_args.cc:  if (!vm.count("lda") && !all->adaptive && !all->normalized_updates) 
+./parse_args.cc:    all->eta *= powf((float)(all->sd->t), all->power_t);
+./parse_args.cc:    all->text_regressor_name = vm["readable_model"].as<string>();
+./parse_args.cc:    all->inv_hash_regressor_name = vm["invert_hash"].as<string>();
+./parse_args.cc:    all->hash_inv = true;   
+./parse_args.cc:    all->save_per_pass = true;
+./parse_args.cc:    all->save_resume = true;
+./parse_args.cc:    all->sd->min_label = vm["min_prediction"].as<float>();
+./parse_args.cc:    all->sd->max_label = vm["max_prediction"].as<float>();
+./parse_args.cc:    all->set_minmax = noop_mm;
+./parse_args.cc:  all->is_noop = false;
+./parse_args.cc:    all->l = NOOP::setup(*all);
+./parse_args.cc:  if (all->rank != 0) 
+./parse_args.cc:    all->l = GDMF::setup(*all);
+./parse_args.cc:  all->loss = getLossFunction(all, loss_function, (float)loss_parameter);
+./parse_args.cc:  if (pow((double)all->eta_decay_rate, (double)all->numpasses) < 0.0001 )
+./parse_args.cc:    cerr << "Warning: the learning rate for the last pass is multiplied by: " << pow((double)all->eta_decay_rate, (double)all->numpasses)
+./parse_args.cc:  if (!all->quiet)
+./parse_args.cc:      cerr << "Num weight bits = " << all->num_bits << endl;
+./parse_args.cc:      cerr << "learning rate = " << all->eta << endl;
+./parse_args.cc:      cerr << "initial_t = " << all->sd->t << endl;
+./parse_args.cc:      cerr << "power_t = " << all->power_t << endl;
+./parse_args.cc:      if (all->numpasses > 1)
+./parse_args.cc:	cerr << "decay_learning_rate = " << all->eta_decay_rate << endl;
+./parse_args.cc:      if (all->rank > 0)
+./parse_args.cc:	cerr << "rank = " << all->rank << endl;
+./parse_args.cc:    if (!all->quiet)
+./parse_args.cc:	all->final_prediction_sink.push_back((size_t) 1);//stdout
+./parse_args.cc:	all->final_prediction_sink.push_back((size_t) f);
+./parse_args.cc:    if (!all->quiet)
+./parse_args.cc:      all->raw_prediction = 1;//stdout
+./parse_args.cc:	  all->raw_prediction = f;
+./parse_args.cc:    all->audit = true;
+./parse_args.cc:    all->l = SENDER::setup(*all, vm, all->pairs);
+./parse_args.cc:  all->l.save_load(io_temp, true, false);
+./parse_args.cc:  if (all->l1_lambda < 0.) {
+./parse_args.cc:    cerr << "l1_lambda should be nonnegative: resetting from " << all->l1_lambda << " to 0" << endl;
+./parse_args.cc:    all->l1_lambda = 0.;
+./parse_args.cc:  if (all->l2_lambda < 0.) {
+./parse_args.cc:    cerr << "l2_lambda should be nonnegative: resetting from " << all->l2_lambda << " to 0" << endl;
+./parse_args.cc:    all->l2_lambda = 0.;
+./parse_args.cc:  all->reg_mode += (all->l1_lambda > 0.) ? 1 : 0;
+./parse_args.cc:  all->reg_mode += (all->l2_lambda > 0.) ? 2 : 0;
+./parse_args.cc:  if (!all->quiet)
+./parse_args.cc:      if (all->reg_mode %2)
+./parse_args.cc:	cerr << "using l1 regularization = " << all->l1_lambda << endl;
+./parse_args.cc:      if (all->reg_mode > 1)
+./parse_args.cc:	cerr << "using l2 regularization = " << all->l2_lambda << endl;
+./parse_args.cc:    all->l = NN::setup(*all, to_pass_further, vm, vm_file);
+./parse_args.cc:    all->l = ALINK::setup(*all, to_pass_further, vm, vm_file);
+./parse_args.cc:    all->l = BINARY::setup(*all, to_pass_further, vm, vm_file);
+./parse_args.cc:    all->l = OAA::setup(*all, to_pass_further, vm, vm_file);
+./parse_args.cc:    all->l = ECT::setup(*all, to_pass_further, vm, vm_file);
+./parse_args.cc:    all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);
+./parse_args.cc:    all->l = WAP::setup(*all, to_pass_further, vm, vm_file);
+./parse_args.cc:    all->l = CSOAA_AND_WAP_LDF::setup(*all, to_pass_further, vm, vm_file);
+./parse_args.cc:    all->l = CSOAA_AND_WAP_LDF::setup(*all, to_pass_further, vm, vm_file);
+./parse_args.cc:      all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);  // default to CSOAA unless wap is specified
+./parse_args.cc:    all->l = CB::setup(*all, to_pass_further, vm, vm_file);
+./parse_args.cc:      all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);  // default to CSOAA unless others have been specified
+./parse_args.cc:    all->l = Searn::setup(*all, to_pass_further, vm, vm_file);
+./parse_args.cc:      all->l = CSOAA::setup(*all, to_pass_further, vm, vm_file);  // default to CSOAA unless others have been specified
+./parse_args.cc:    all->searnstr = (ImperativeSearn::searn*)calloc(1, sizeof(ImperativeSearn::searn));
+./parse_args.cc:    all->l = ImperativeSearn::setup(*all, to_pass_further, vm, vm_file);
+./parse_args.cc:      int f = io_buf().open_file(last_unrec_arg.c_str(), all->stdin_off, io_buf::READ);
+./parse_args.cc:        all->data_filename = last_unrec_arg;
+./parse_args.cc:          set_compressed(all->p);
+./parse_args.cc:  parse_source_args(*all, vm, all->quiet,all->numpasses);
+./parse_args.cc:  while (all->reg.stride * all->weights_per_problem  > (uint32_t)(1 << i))
+./parse_args.cc:  all->weights_per_problem = (1 << i) / all->reg.stride;
+./parse_example.cc:  all->p->lp->default_label(ae->ld);
+./parse_example.cc:    all->p->words.erase();
+./parse_example.cc:    tokenize(' ', label_space, all->p->words);
+./parse_example.cc:    if (all->p->words.size() > 0 && (all->p->words.last().end == label_space.end	|| *(all->p->words.last().begin) == '\'')) //The last field is a tag, so record and strip it off
+./parse_example.cc:	substring tag = all->p->words.pop();
+./parse_example.cc:  if (all->p->words.size() > 0)
+./parse_example.cc:    all->p->lp->parse_label(all->p, all->sd, ae->ld, all->p->words);
+./parse_example.cc:  size_t num_chars_initial = readto(*(all->p->input), line, '\n');
+./parser.cc:    while(!all->p->done)
+./parser.cc:        if (!all->do_reset_source && example_number != all->pass_length && all->max_examples > example_number
+./parser.cc:            reset_source(*all, all->num_bits);
+./parser.cc:            all->do_reset_source = false;
+./parser.cc:            all->passes_complete++;
+./parser.cc:            if (all->passes_complete == all->numpasses && example_number == all->pass_length)
+./parser.cc:                all->passes_complete = 0;
+./parser.cc:                all->pass_length = all->pass_length*2+1;
+./parser.cc:            if (all->passes_complete >= all->numpasses && all->max_examples >= example_number)
+./parser.cc:                mutex_lock(&all->p->examples_lock);
+./parser.cc:                all->p->done = true;
+./parser.cc:                mutex_unlock(&all->p->examples_lock);
+./parser.cc:        mutex_lock(&all->p->examples_lock);
+./parser.cc:        all->p->parsed_examples++;
+./parser.cc:        condition_variable_signal_all(&all->p->example_available);
+./parser.cc:        mutex_unlock(&all->p->examples_lock);
+./searn.cc:      if ((ec = VW::get_example(all->p)) != NULL) { // semiblocking operation
+./searn.cc:      } else if (parser_done(all->p)) {
+./searn.cc:    if( all->training ) {
+./searn.cc:      VW::cmd_string_replace_value(all->options_from_file,"--searn_trained_nb_policies", ss1.str()); 
+./searn.cc:      VW::cmd_string_replace_value(all->options_from_file,"--searn_total_nb_policies", ss2.str());
+./searn.cc:    if (ec->end_pass || OAA::example_is_newline(ec) || srn->ec_seq.size() >= all->p->ring_size - 2) { 
+./searn.cc:      if (srn->ec_seq.size() >= all->p->ring_size - 2) { // give some wiggle room
+./searn.cc:          if(all->training)
+./searn.cc:          VW::cmd_string_replace_value(all->options_from_file,"--searn_trained_nb_policies", ss.str());
+./searn.cc:      if ((ec = VW::get_example(all->p)) != NULL) { // semiblocking operation
+./searn.cc:      } else if (parser_done(all->p)) {
+./searn.cc:    if( all->training ) {
+./searn.cc:      VW::cmd_string_replace_value(all->options_from_file,"--searnimp_trained_nb_policies", ss1.str()); 
+./searn.cc:      VW::cmd_string_replace_value(all->options_from_file,"--searnimp_total_nb_policies", ss2.str());
+./sender.cc:  example** delay_ring = (example**) calloc(all->p->ring_size, sizeof(example*));
+./sender.cc:      if (received_index + all->p->ring_size == sent_index || (parser_finished & (received_index != sent_index)))
+./sender.cc:	  ec=delay_ring[received_index++ % all->p->ring_size];
+./sender.cc:	  ec->loss = all->loss->getLoss(all->sd, ec->final_prediction, ld->label) * ld->weight;
+./sender.cc:      else if ((ec = VW::get_example(all->p)) != NULL && !command_example(all,ec))//semiblocking operation.
+./sender.cc:          all->set_minmax(all->sd, ld->label);
+./sender.cc:	  send_features(s->buf,ec, all->parse_mask);
+./sender.cc:	  delay_ring[sent_index++ % all->p->ring_size] = ec;
+./sender.cc:      else if (parser_done(all->p))
+./wap.cc:        if ((ec = VW::get_example(all->p)) != NULL)//semiblocking operation.
+./wap.cc:        else if (parser_done(all->p))

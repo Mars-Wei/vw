@@ -31,7 +31,7 @@ void save_load_regressor(vw& all, io_buf& model_file, bool read, bool text);
 void output_and_account_example(example* ec);
 
  template <void (*T)(vw&, void*, float, uint32_t)>
-   void foreach_feature(vw& all, void* dat, feature* begin, feature* end, uint32_t offset=0, float mult=1.)
+   void foreach_feature(vw& all, void* dat, feature* begin, feature* end, uint32_t offset=0, float mult=1.)//mult is for pair feature
    {
      for (feature* f = begin; f!= end; f++)
        T(all, dat, mult*f->x, f->weight_index + offset);

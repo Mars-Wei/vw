@@ -171,6 +171,8 @@ public:
   }
   
   float getLoss(shared_data*, float prediction, float label) {
+    if(!(label == -1.f || label == 1.f || label == FLT_MAX))
+	cerr<<"getLoss"<<label<<endl;
     assert(label == -1.f || label == 1.f || label == FLT_MAX);
     return log(1 + exp(-label * prediction));
   }

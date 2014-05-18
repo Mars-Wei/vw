@@ -1,6 +1,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
+#include <sstream>
 
 #include "simple_label.h"
 #include "cache.h"
@@ -106,34 +107,7 @@ void parse_simple_label(parser* p, shared_data* sd, void* v, v_array<substring>&
     cout << "You are using a label not -1 or 1 with a loss function expecting that!" << endl;
 }
 
-float get_active_coin_bias(float k, float l, float g, float c0)
-{
-  float b,sb,rs,sl;
-  b=(float)(c0*(log(k+1.)+0.0001)/(k+0.0001));
-  sb=sqrt(b);
-  if (l > 1.0) { l = 1.0; } else if (l < 0.0) { l = 0.0; } //loss should be in [0,1]
-  sl=sqrt(l)+sqrt(l+g);
-  if (g<=sb*sl+b)
-    return 1;
-  rs = (sl+sqrt(sl*sl+4*g))/(2*g);
-  return b*rs*rs;
-}
 
-float query_decision(vw& all, example* ec, float k)
-{
-  float bias, avg_loss, weighted_queries;
-  if (k<=1.)
-    bias=1.;
-  else{
-    weighted_queries = (float)(all.initial_t + all.sd->weighted_examples - all.sd->weighted_unlabeled_examples);
-    avg_loss = (float)(all.sd->sum_loss/k + sqrt((1.+0.5*log(k))/(weighted_queries+0.0001)));
-    bias = get_active_coin_bias(k, avg_loss, ec->revert_weight/k, all.active_c0);
-  }
-  if(frand48()<bias)
-    return 1.f/bias;
-  else
-    return -1.;
-}
 
 void print_update(vw& all, example *ec)
 {
@@ -176,51 +150,127 @@ void print_update(vw& all, example *ec)
     }
 }
 
+static
+void packet_print_result(int f, const char * buf, size_t size)
+{//for compress predict
+  if (f >= 0)
+    {
+        //cerr<<"pack_print_result, size="<<size<<endl;
+        size_t idx = 0;
+        while(idx<size)
+        {
+        #ifdef _WIN32
+              ssize_t t = _write(f, buf+idx, size-idx);
+        #else
+              ssize_t t = write(f, buf+idx, size-idx);
+        #endif
+                if(t <=0 )
+                {
+                    cerr<<"write error"<<endl;
+                    return;
+                }
+                idx += t;
+
+            
+        }
+    }
+}
+
+
+
+
+static
+void packet_output_and_account_example(vw& all, example* ec)
+{
+    assert(all.compress_predict && all.lda<=0 && all.final_prediction_sink.size() == 1);
+
+    if( ! ec->end_packet )
+    {
+        label_data* ld = (label_data*)ec->ld;
+
+        if(ec->test_only)
+        {//prediction
+            all.sd->weighted_holdout_examples += ec->global_weight;//test weight seen
+            all.sd->weighted_holdout_examples_since_last_dump += ec->global_weight;
+        }
+        else
+        {
+            all.sd->weighted_examples += ld->weight;
+            all.sd->weighted_labels += ld->label == FLT_MAX ? 0 : ld->label * ld->weight;
+            all.sd->total_features += ec->num_features;
+            all.sd->sum_loss += ec->loss;
+            all.sd->sum_loss_since_last_dump += ec->loss;
+            all.sd->example_number++;
+        }
+
+        //assert(all.raw_prediction == -1);
+        all.print(all.raw_prediction, ec->partial_prediction, -1, ec->tag);//in prediciton model raw_prediction is -1
+        all.sd->weighted_unlabeled_examples += ld->label == FLT_MAX ? ld->weight : 0;
+        //all.print(f, ec->final_prediction, 0, ec->tag);
+
+        std::stringstream &ss = *(all.packet_ss);
+        ss<<ec->final_prediction;
+        print_tag(ss,ec->tag);
+        ss<<'\n';
+
+        print_update(all, ec);
+    }
+    else{//end of the packet
+
+          int f = (int)all.final_prediction_sink[0];
+          packet_print_result(f, all.packet_ss->str().c_str(), all.packet_ss->str().size());
+          all.packet_ss->str("");
+          all.packet_ss->clear();
+    }
+}
+
+
+
+
 void output_and_account_example(vw& all, example* ec)
 {
-  label_data* ld = (label_data*)ec->ld;
-
-  if(ec->test_only)
-  {
-    all.sd->weighted_holdout_examples += ec->global_weight;//test weight seen
-    all.sd->weighted_holdout_examples_since_last_dump += ec->global_weight;
-  }
-  else
-  {
-  all.sd->weighted_examples += ld->weight;
-  all.sd->weighted_labels += ld->label == FLT_MAX ? 0 : ld->label * ld->weight;
-  all.sd->total_features += ec->num_features;
-  all.sd->sum_loss += ec->loss;
-  all.sd->sum_loss_since_last_dump += ec->loss;
-  all.sd->example_number++;
-  }
-  all.print(all.raw_prediction, ec->partial_prediction, -1, ec->tag);
-
-  float ai=-1; 
-  if(all.active && ld->label == FLT_MAX)
-    ai=query_decision(all, ec, (float)all.sd->weighted_unlabeled_examples);
-  all.sd->weighted_unlabeled_examples += ld->label == FLT_MAX ? ld->weight : 0;
-  
-  for (size_t i = 0; i<all.final_prediction_sink.size(); i++)
+    if(all.compress_predict)
     {
-      int f = (int)all.final_prediction_sink[i];
-      if(all.active)
-	active_print_result(f, ec->final_prediction, ai, ec->tag);
-      else if (all.lda > 0)
-	print_lda_result(all, f,ec->topic_predictions.begin,0.,ec->tag);
-      else
-	all.print(f, ec->final_prediction, 0, ec->tag);
+        packet_output_and_account_example(all, ec);
+        return;
     }
+    else{
+        label_data* ld = (label_data*)ec->ld;
 
-  
+        if(ec->test_only)
+        {
+            all.sd->weighted_holdout_examples += ec->global_weight;//test weight seen
+            all.sd->weighted_holdout_examples_since_last_dump += ec->global_weight;
+        }
+        else
+        {
+            all.sd->weighted_examples += ld->weight;
+            all.sd->weighted_labels += ld->label == FLT_MAX ? 0 : ld->label * ld->weight;
+            all.sd->total_features += ec->num_features;
+            all.sd->sum_loss += ec->loss;
+            all.sd->sum_loss_since_last_dump += ec->loss;
+            all.sd->example_number++;
+        }
+        all.print(all.raw_prediction, ec->partial_prediction, -1, ec->tag);
 
-  print_update(all, ec);
+        all.sd->weighted_unlabeled_examples += ld->label == FLT_MAX ? ld->weight : 0;
+
+        for (size_t i = 0; i<all.final_prediction_sink.size(); i++)
+        {
+            int f = (int)all.final_prediction_sink[i];
+            if (all.lda > 0)
+                print_lda_result(all, f,ec->topic_predictions.begin,0.,ec->tag);
+            else
+                all.print(f, ec->final_prediction, 0, ec->tag);
+        }
+        print_update(all, ec);
+    }
 }
 
 void return_simple_example(vw& all, example* ec)
 {
-  if (!command_example(&all, ec))
-    output_and_account_example(all, ec);
-  VW::finish_example(all,ec);
+    if (!command_example(&all, ec))
+        output_and_account_example(all, ec);
+    VW::finish_example(all,ec);
 }
 

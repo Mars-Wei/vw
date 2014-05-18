@@ -35,8 +35,6 @@ namespace GD
 {
   struct gd{
     size_t current_pass;
-    bool active;
-    bool active_simulation;
     float normalized_sum_norm_x;
     bool feature_mask_off;
 
@@ -57,10 +55,7 @@ namespace GD
       return;
     
     float total_weight = 0.f;
-    if(all.active)
-      total_weight = (float)all.sd->weighted_unlabeled_examples;
-    else
-      total_weight = ec->example_t;
+     total_weight = ec->example_t;
 
     if(!all.holdout_set_off)
       total_weight -= all.sd->weighted_holdout_examples; //exclude weights from test_only examples   
@@ -90,7 +85,7 @@ inline void general_update(vw& all, void* dat, float x, uint32_t fi)
 
     weight* w = &all.reg.weight_vector[fi & all.reg.weight_mask];
     float t = 1.f;
-    if(all.adaptive) t = powf(w[1],-all.power_t);
+    if(all.adaptive) t = powf(w[1],-all.power_t);//Lk=L0*alpha^-k
     if(all.normalized_updates) {
       float norm = w[all.normalized_idx] * s->avg_norm;
       float power_t_norm = 1.f - (all.adaptive ? all.power_t : 0.f);
@@ -133,7 +128,7 @@ void learn(void* d, example* ec)
 
   assert(ec->in_use);
   if (ec->end_pass)
-  { 
+  {//end of the pass, allreduce 
       sync_weights(*all);
       if(all->span_server != "") {
           if(all->adaptive)
@@ -177,7 +172,7 @@ void learn(void* d, example* ec)
                                   (*all,ec,ec->eta_round,true);
                       }
                   }              
-                  else { //for adaptive 
+                  else { //for non adaptive 
                       if (all->normalized_updates){ 
                           if (g->feature_mask_off) 
                               generic_train<specialized_update<false, true, true> >
@@ -219,7 +214,8 @@ void sync_weights(vw& all) {
         return;
     uint32_t length = 1 << all.num_bits;
     size_t stride = all.reg.stride;
-    for(uint32_t i = 0; i < length && all.reg_mode; i++)
+    cerr << "gravity: " << (float)all.sd->gravity <<endl;
+    for(uint32_t i = 0; i < length && all.reg_mode; i++)//do regularization
         all.reg.weight_vector[stride*i] = trunc_weight(all.reg.weight_vector[stride*i], (float)all.sd->gravity) * (float)all.sd->contraction;
     all.sd->gravity = 0.;
     all.sd->contraction = 1.;
@@ -437,12 +433,12 @@ inline void simple_norm_compute(vw& all, void* v, float x, uint32_t fi) {
         float t = 1.f;
         float inv_norm = 1.f;
         float inv_norm2 = 1.f;
-        if(normalized) {
+        if(normalized) {//per-feature normalized updates
             inv_norm /= w[all.normalized_idx];
             inv_norm2 = inv_norm*inv_norm;
             nd->norm_x += x2 * inv_norm2;
         }
-        if(adaptive){
+        if(adaptive){//adaptive individual learning rates
             w[1] += nd->g * x2;
 
 #if defined(__SSE2__) && !defined(VW_LDA_NO_SSE)
@@ -495,9 +491,6 @@ float compute_norm(vw& all, example* &ec)
 
     if(all.normalized_updates) {
         float total_weight = 0;
-        if(all.active)
-            total_weight = (float)all.sd->weighted_unlabeled_examples;
-        else
             total_weight = ec->example_t;
 
         if(!all.holdout_set_off)
@@ -519,29 +512,15 @@ float compute_norm(vw& all, example* &ec)
 }
 
 void local_predict(vw& all, gd& g, example* ec)
-{
+{//for one example
     label_data* ld = (label_data*)ec->ld;
 
     all.set_minmax(all.sd, ld->label);
 
     ec->final_prediction = finalize_prediction(all, ec->partial_prediction * (float)all.sd->contraction);
 
-    if(g.active_simulation){
-        float k = ec->example_t - ld->weight;
-        ec->revert_weight = all.loss->getRevertingWeight(all.sd, ec->final_prediction, all.eta/powf(k,all.power_t));
-        float importance = query_decision(all, ec, k);
-        if(importance > 0){
-            all.sd->queries += 1;
-            ld->weight *= importance;
-        }
-        else //do not query => do not train
-            ld->label = FLT_MAX;
-    }
 
     float t;
-    if(all.active)
-        t = (float)all.sd->weighted_unlabeled_examples;
-    else
         t = ec->example_t;
 
     ec->eta_round = 0;
@@ -552,7 +531,7 @@ void local_predict(vw& all, gd& g, example* ec)
         all.sd->holdout_sum_loss_since_last_dump += ec->loss;
     }
     else if (ld->label != FLT_MAX)
-    {
+    {//valid label
         ec->loss = all.loss->getLoss(all.sd, ec->final_prediction, ld->label) * ld->weight;
         if (all.training && ec->loss > 0.)
         {
@@ -609,8 +588,6 @@ void local_predict(vw& all, gd& g, example* ec)
             }
         }
     }
-    else if(all.active)
-        ec->revert_weight = all.loss->getRevertingWeight(all.sd, ec->final_prediction, all.eta/powf(t,all.power_t));
 
     if ((all.audit && !ec->test_only) || all.hash_inv)
         print_audit_features(all, ec);
@@ -623,7 +600,7 @@ void predict(vw& all, gd& g, example* ex)
 
     if (all.training && all.normalized_updates && ld->label != FLT_MAX && ld->weight > 0 && (all.holdout_set_off || !ex->test_only)) {
         if( all.power_t == 0.5 ) {
-            if (all.reg_mode % 2)
+            if (all.reg_mode % 2)//l1_lambda > 0
                 prediction = inline_predict<vec_add_trunc_rescale>(all, ex);
             else
                 prediction = inline_predict<vec_add_rescale>(all, ex);
@@ -841,7 +818,7 @@ void save_load(void* data, io_buf& model_file, bool read, bool text)
     }
 
     if (model_file.files.size() > 0)
-    {
+    {//read model file
         bool resume = all->save_resume;
         char buff[512];
         uint32_t text_len = sprintf(buff, ":%d\n", resume);
@@ -877,8 +854,6 @@ learner setup(vw& all, po::variables_map& vm)
 {
     gd* g = (gd*)calloc(1, sizeof(gd));
     g->all = &all;
-    g->active = all.active;
-    g->active_simulation = all.active_simulation;
     g->normalized_sum_norm_x = all.normalized_sum_norm_x;
 
     if(vm.count("feature_mask"))

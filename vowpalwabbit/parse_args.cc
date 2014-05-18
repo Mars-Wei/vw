@@ -55,9 +55,6 @@ vw* parse_args(int argc, char *argv[])
   // Declare the supported options.
   desc.add_options()
     ("help,h","Look here: http://hunch.net/~vw/ and click on Tutorial.")
-    ("active_learning", "active learning mode")
-    ("active_simulation", "active learning simulation mode")
-    ("active_mellowness", po::value<float>(&(all->active_c0)), "active learning mellowness parameter c_0. Default 8")
     ("autolink", po::value<size_t>(), "create link function with polynomial d")
     ("sgd", "use regular stochastic gradient descent update.")
     ("adaptive", "use adaptive, individual learning rates.")
@@ -77,6 +74,7 @@ vw* parse_args(int argc, char *argv[])
     ("l2", po::value<float>(&(all->l2_lambda)), "l_2 lambda")
     ("data,d", po::value< string >(), "Example Set")
     ("daemon", "persistent daemon mode on port 26542")
+    ("compress_predict", "compress predict packet")
     ("num_children", po::value<size_t>(&(all->num_children)), "number of children for persistent daemon mode")
     ("pid_file", po::value< string >(), "Write pid file in persistent daemon mode")
     ("decay_learning_rate",    po::value<float>(&(all->eta_decay_rate)),
@@ -189,11 +187,7 @@ vw* parse_args(int argc, char *argv[])
 
   msrand48(random_seed);
 
-  if (vm.count("active_simulation"))
-      all->active_simulation = true;
 
-  if (vm.count("active_learning") && !all->active_simulation)
-    all->active = true;
 
   if (vm.count("no_stdin"))
     all->stdin_off = true;
@@ -228,7 +222,7 @@ vw* parse_args(int argc, char *argv[])
     if( all->adaptive ) all->reg.stride *= 2;
     else all->normalized_idx = 1; //store per feature norm at 1 index offset from weight value instead of 2
 
-    if( all->normalized_updates ) all->reg.stride *= 2;
+    if( all->normalized_updates ) all->reg.stride *= 2; 
 
     if(!vm.count("learning_rate") && !vm.count("l") && !(all->adaptive && all->normalized_updates))
       all->eta = 10; //default learning rate to 10 for non default update rule
@@ -293,8 +287,14 @@ vw* parse_args(int argc, char *argv[])
 	}
     }
   
-  if (vm.count("daemon") || vm.count("pid_file") || (vm.count("port") && !all->active) ) {
+  if (vm.count("daemon") || vm.count("pid_file") || vm.count("port")  ) {
     all->daemon = true;
+   
+  if(vm.count("compress_predict"))
+    {
+        cerr<<"compress predict configured"<<endl;
+        all->compress_predict = true; 
+    }
 
     // allow each child to process up to 1e5 connections
     all->numpasses = (size_t) 1e5;

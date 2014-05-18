@@ -1,0 +1,73 @@
+./gd.cc:      total_weight -= all.sd->weighted_holdout_examples; //exclude weights from test_only examples   
+./gd.cc:    if (all.sd->gravity == 0. && all.sd->contraction == 1.)  // to avoid unnecessary weight synchronization
+./gd.cc:    cerr << "gravity: " << (float)all.sd->gravity <<endl;
+./gd.cc:        all.reg.weight_vector[stride*i] = trunc_weight(all.reg.weight_vector[stride*i], (float)all.sd->gravity) * (float)all.sd->contraction;
+./gd.cc:    all.sd->gravity = 0.;
+./gd.cc:    all.sd->contraction = 1.;
+./gd.cc:    if ( ret > all.sd->max_label )
+./gd.cc:        return (float)all.sd->max_label;
+./gd.cc:    if (ret < all.sd->min_label)
+./gd.cc:        return (float)all.sd->min_label;
+./gd.cc:        tempstream  << ':' << trunc_weight(weights[index], (float)all.sd->gravity) * (float)all.sd->contraction;
+./gd.cc:            total_weight -= all.sd->weighted_holdout_examples; //exclude weights from test_only examples   
+./gd.cc:    ec->final_prediction = finalize_prediction(all, ec->partial_prediction * (float)all.sd->contraction);
+./gd.cc:        all.sd->holdout_sum_loss += ec->loss;
+./gd.cc:        all.sd->holdout_sum_loss_since_last_dump += ec->loss;
+./gd.cc:            ec->eta_round = (float) (update / all.sd->contraction);
+./gd.cc:                    all.sd->contraction /= (1. + all.l2_lambda * eta_bar * norm);
+./gd.cc:                all.sd->gravity += eta_bar * sqrt(norm) * all.l1_lambda;
+./gd.cc:    text_len = sprintf(buff, "t %f\n", all.sd->t);
+./gd.cc:    bin_text_read_write_fixed(model_file,(char*)&all.sd->t, sizeof(all.sd->t), 
+./gd.cc:    text_len = sprintf(buff, "sum_loss %f\n", all.sd->sum_loss);
+./gd.cc:    bin_text_read_write_fixed(model_file,(char*)&all.sd->sum_loss, sizeof(all.sd->sum_loss), 
+./gd.cc:    text_len = sprintf(buff, "weighted_examples %f\n", all.sd->weighted_examples);
+./gd.cc:    bin_text_read_write_fixed(model_file,(char*)&all.sd->weighted_examples, sizeof(all.sd->weighted_examples), 
+./gd.cc:    text_len = sprintf(buff, "weighted_labels %f\n", all.sd->weighted_labels);
+./gd.cc:    bin_text_read_write_fixed(model_file,(char*)&all.sd->weighted_labels, sizeof(all.sd->weighted_labels), 
+./gd.cc:    text_len = sprintf(buff, "weighted_unlabeled_examples %f\n", all.sd->weighted_unlabeled_examples);
+./gd.cc:    bin_text_read_write_fixed(model_file,(char*)&all.sd->weighted_unlabeled_examples, sizeof(all.sd->weighted_unlabeled_examples), 
+./gd.cc:    text_len = sprintf(buff, "example_number %u\n", (uint32_t)all.sd->example_number);
+./gd.cc:    bin_text_read_write_fixed(model_file,(char*)&all.sd->example_number, sizeof(all.sd->example_number), 
+./gd.cc:    text_len = sprintf(buff, "total_features %u\n", (uint32_t)all.sd->total_features);
+./gd.cc:    bin_text_read_write_fixed(model_file,(char*)&all.sd->total_features, sizeof(all.sd->total_features), 
+./nn.cc:    save_min_label = all.sd->min_label;
+./nn.cc:    all.sd->min_label = hidden_min_activation;
+./nn.cc:    save_max_label = all.sd->max_label;
+./nn.cc:    all.sd->max_label = hidden_max_activation;
+./nn.cc:    all.sd->min_label = save_min_label;
+./nn.cc:    all.sd->max_label = save_max_label;
+./nn.cc:        save_min_label = all.sd->min_label;
+./nn.cc:        all.sd->min_label = hidden_min_activation;
+./nn.cc:        save_max_label = all.sd->max_label;
+./nn.cc:        all.sd->max_label = hidden_max_activation;
+./nn.cc:        all.sd->min_label = save_min_label;
+./nn.cc:        all.sd->max_label = save_max_label;
+./parse_regressor.cc:        text_len = sprintf(buff, "Min label:%f\n", all.sd->min_label);
+./parse_regressor.cc:        bin_text_read_write_fixed(model_file,(char*)&all.sd->min_label, sizeof(all.sd->min_label), 
+./parse_regressor.cc:        text_len = sprintf(buff, "Max label:%f\n", all.sd->max_label);
+./parse_regressor.cc:        bin_text_read_write_fixed(model_file,(char*)&all.sd->max_label, sizeof(all.sd->max_label), 
+./parser.cc:    all.sd->t += ae->global_weight;
+./parser.cc:    ae->example_t = (float)all.sd->t;
+./simple_label.cc:  if (all.sd->weighted_examples > all.sd->dump_interval && !all.quiet && !all.bfgs)
+./simple_label.cc:	      all.sd->holdout_sum_loss/all.sd->weighted_holdout_examples,
+./simple_label.cc:	      all.sd->holdout_sum_loss_since_last_dump / all.sd->weighted_holdout_examples_since_last_dump,
+./simple_label.cc:	      (long int)all.sd->example_number,
+./simple_label.cc:	      all.sd->weighted_examples,
+./simple_label.cc:        all.sd->weighted_holdout_examples_since_last_dump = 0;
+./simple_label.cc:        all.sd->holdout_sum_loss_since_last_dump = 0.0;
+./simple_label.cc:	      all.sd->sum_loss/all.sd->weighted_examples,
+./simple_label.cc:	      all.sd->sum_loss_since_last_dump / (all.sd->weighted_examples - all.sd->old_weighted_examples),
+./simple_label.cc:	      (long int)all.sd->example_number,
+./simple_label.cc:	      all.sd->weighted_examples,
+./simple_label.cc:      all.sd->sum_loss_since_last_dump = 0.0;
+./simple_label.cc:      all.sd->old_weighted_examples = all.sd->weighted_examples;
+./simple_label.cc:      all.sd->dump_interval *= 2;
+./simple_label.cc:    all.sd->weighted_holdout_examples += ec->global_weight;//test weight seen
+./simple_label.cc:    all.sd->weighted_holdout_examples_since_last_dump += ec->global_weight;
+./simple_label.cc:  all.sd->weighted_examples += ld->weight;
+./simple_label.cc:  all.sd->weighted_labels += ld->label == FLT_MAX ? 0 : ld->label * ld->weight;
+./simple_label.cc:  all.sd->total_features += ec->num_features;
+./simple_label.cc:  all.sd->sum_loss += ec->loss;
+./simple_label.cc:  all.sd->sum_loss_since_last_dump += ec->loss;
+./simple_label.cc:  all.sd->example_number++;
+./simple_label.cc:  all.sd->weighted_unlabeled_examples += ld->label == FLT_MAX ? ld->weight : 0;

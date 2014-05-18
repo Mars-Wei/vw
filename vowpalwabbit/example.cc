@@ -111,6 +111,9 @@ bool command_example(void* a, example* ec)
   if(ec->end_pass) // the end-of-pass example
     return true;
 
+  if(ec->end_packet)
+    return false; //the special example
+
   if (ec->indices.size() > 1) // one nonconstant feature.
     return false;
 
