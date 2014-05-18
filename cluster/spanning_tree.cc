@@ -207,7 +207,7 @@ int main(int argc, char* argv[]) {
         }
         size_t id = 0;
         if (recv(f, (char*)&id, sizeof(id), 0) != sizeof(id))
-        {
+        {//read node
             cerr << "node id read failed, exiting" << endl;
             exit(1);
         }
