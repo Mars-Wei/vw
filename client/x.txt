@@ -1,0 +1,14 @@
+bid/clk * clk/show * roi/clk
+=bid/show * roi/clk
+
+value/conv  * conv/show
+
+
+value/conv * conv/show
+
+= value / show  /  (clk/ show)
+
+1000 /  show
+0.1  /  show
+
+10000 / clk
